@@ -3,11 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinGuide - Финансовый трекер</title>
+    <title>Финансовый Трекер | Telegram Web App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Сброс и базовые стили */
+        /* БАЗОВЫЕ СТИЛИ из первого файла (основной дизайн) */
+        :root {
+            --primary-color: #40a7e3;
+            --income-color: #4CAF50;
+            --expense-color: #f44336;
+            --goal-color: #FF9800;
+            --investment-color: #9C27B0;
+            --savings-color: #00BCD4;
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --card-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            --border-color: var(--tg-theme-hint-color, #e0e0e0);
+            --button-color: var(--tg-theme-button-color, #40a7e3);
+            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -15,658 +31,856 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #f8f9fa);
-            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
             padding: 16px;
-            padding-bottom: 80px;
             max-width: 100%;
             overflow-x: hidden;
+            line-height: 1.6;
         }
         
-        /* Шапка */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
         .header {
             text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        
-        .date {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        /* Карточка баланса */
-        .balance-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .balance-label {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-        }
-        
-        .balance-amount {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        
-        .balance-change {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        /* Метрики */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .metric-card {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
-        .metric-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        
-        .metric-value {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .metric-sub {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
         }
         
         /* Навигация */
         .nav-tabs {
             display: flex;
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            padding: 4px;
+            border-bottom: 2px solid var(--border-color);
             margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding-top: 10px;
         }
         
         .nav-tab {
             flex: 1;
-            text-align: center;
             padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--tg-theme-hint-color, #666);
         }
         
         .nav-tab.active {
-            background: var(--tg-theme-button-color, #007aff);
-            color: white;
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
         }
         
-        /* Секции */
-        .section {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .section.active {
+        .nav-tab i {
             display: block;
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+        
+        /* Вкладки */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Карточка баланса */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-color), #2481cc);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .balance-amount {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        /* Сетка метрик */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card.income { border-top: 4px solid var(--income-color); }
+        .stat-card.expense { border-top: 4px solid var(--expense-color); }
+        .stat-card.savings { border-top: 4px solid var(--savings-color); }
+        .stat-card.investments { border-top: 4px solid var(--investment-color); }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-card.income .stat-value { color: var(--income-color); }
+        .stat-card.expense .stat-value { color: var(--expense-color); }
+        .stat-card.savings .stat-value { color: var(--savings-color); }
+        .stat-card.investments .stat-value { color: var(--investment-color); }
+        
+        /* Блоки быстрых действий и секций (старый стиль) */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: var(--card-bg);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-color);
+            border: 1px solid transparent;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .action-btn i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
         }
         
         .section-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 16px;
+            margin-bottom: 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
         }
         
-        /* Транзакции */
-        .transaction-list {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 20px;
+        .see-all {
+            font-size: 14px;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        /* График и транзакции (старый стиль) */
+        .chart-container {
+            height: 250px;
+            margin: 15px 0;
         }
         
         .transaction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border-left: 5px solid;
+            border: 1px solid var(--border-color);
         }
         
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-        
-        .transaction-info {
-            flex: 1;
-        }
-        
-        .transaction-category {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .transaction-desc {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        
-        .transaction-date {
-            font-size: 12px;
-            color: #999;
-        }
+        .transaction-income { border-left-color: var(--income-color); }
+        .transaction-expense { border-left-color: var(--expense-color); }
         
         .transaction-amount {
-            font-weight: 700;
-            font-size: 18px;
-        }
-        
-        .income {
-            color: #34c759;
-        }
-        
-        .expense {
-            color: #ff3b30;
-        }
-        
-        /* Кнопки */
-        .btn-primary {
-            background: var(--tg-theme-button-color, #007aff);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 24px;
+            font-weight: bold;
             font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            margin-bottom: 16px;
         }
         
-        /* График */
-        .chart-container {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        .transaction-income .transaction-amount { color: var(--income-color); }
+        .transaction-expense .transaction-amount { color: var(--expense-color); }
+        
+        /* Цели и инвестиции (старый стиль) */
+        .goal-item {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--goal-color);
         }
         
-        /* Советы */
-        .advice-list {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
+        .progress-bar {
+            height: 10px;
+            background: var(--border-color);
+            border-radius: 5px;
             overflow: hidden;
+            margin: 10px 0;
         }
         
-        .advice-item {
-            padding: 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--goal-color), #FFB74D);
+            border-radius: 5px;
+        }
+        
+        .investment-card {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--investment-color);
+        }
+        
+        /* ПРОФИЛЬ - НОВЫЙ СТИЛЬ (из твоего файла) */
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #2481cc);
             display: flex;
             align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 15px;
         }
         
-        .advice-item:last-child {
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .profile-info h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .profile-info p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .profile-stat {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .profile-stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .profile-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .profile-goal-card {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), transparent);
+            padding: 18px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--goal-color);
+            border: 1px solid rgba(255, 152, 0, 0.2);
+        }
+        
+        .profile-goal-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--goal-color);
+        }
+        
+        .profile-settings-card {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .profile-settings-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .setting-item:last-child {
             border-bottom: none;
         }
         
-        .advice-icon {
-            margin-right: 12px;
-            font-size: 20px;
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        /* Анимации */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .profile-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
         }
         
-        /* Адаптивность */
+        .profile-btn i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .profile-btn.primary {
+            background: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+        }
+        
+        .profile-btn.primary i {
+            color: var(--button-text-color);
+        }
+        
+        .profile-date {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Вспомогательные классы */
+        .hidden { display: none; }
+        .pulse { animation: pulse 2s infinite; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         @media (max-width: 480px) {
-            .balance-amount {
-                font-size: 32px;
-            }
-            
-            .metric-value {
-                font-size: 18px;
-            }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .action-btn span { font-size: 12px; }
+            .balance-amount { font-size: 36px; }
+            .profile-stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Шапка -->
-    <div class="header">
-        <h1 id="userName">Финансовый Трекер</h1>
-        <div class="date" id="currentDate">Понедельник, 19 января 2026 г.</div>
-    </div>
-
-    <!-- Навигация -->
-    <div class="nav-tabs">
-        <div class="nav-tab active" data-tab="dashboard">Дашборд</div>
-        <div class="nav-tab" data-tab="transactions">Транзакции</div>
-        <div class="nav-tab" data-tab="goals">Цели</div>
-        <div class="nav-tab" data-tab="profile">Профиль</div>
-    </div>
-
-    <!-- Дашборд -->
-    <div id="dashboard" class="section active">
-        <!-- Карточка баланса -->
-        <div class="balance-card">
-            <div class="balance-label">Ваш баланс</div>
-            <div class="balance-amount" id="balanceAmount">25 000 ₽</div>
-            <div class="balance-change">+25 000 ₽ за месяц</div>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-chart-line pulse"></i> Финансовый Трекер</h1>
+            <div id="currentDate">Понедельник, 19 января 2026 г.</div>
         </div>
-
-        <!-- Метрики -->
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-label">Доходы</div>
-                <div class="metric-value">120 000 ₽</div>
-                <div class="metric-sub">12 операций</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Расходы</div>
-                <div class="metric-value">95 000 ₽</div>
-                <div class="metric-sub">19 операций</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Сбережения</div>
-                <div class="metric-value">20.8%</div>
-                <div class="metric-sub">от доходов</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Инвестиции</div>
-                <div class="metric-value">25 000 ₽</div>
-                <div class="metric-sub">3 актива</div>
-            </div>
-        </div>
-
-        <!-- График расходов -->
-        <div class="section-title">Структура расходов</div>
-        <div class="chart-container">
-            <canvas id="expensesChart"></canvas>
-        </div>
-
-        <!-- Советы -->
-        <div class="section-title">Персональные советы</div>
-        <div class="advice-list">
-            <div class="advice-item">
-                <div class="advice-icon">🔴</div>
-                <div>Попробуйте сократить расходы на развлечения на 20%</div>
-            </div>
-            <div class="advice-item">
-                <div class="advice-icon">🟡</div>
-                <div>Откладывайте 20% от дохода каждый месяц</div>
-            </div>
-            <div class="advice-item">
-                <div class="advice-icon">🟢</div>
-                <div>Рассмотрите возможность инвестирования в акции ЛУКОЙЛ</div>
-            </div>
-        </div>
-
-        <!-- Последние операции -->
-        <div class="section-title" style="margin-top: 24px;">Последние операции</div>
-        <div class="transaction-list" id="recentTransactions">
-            <!-- Заполнится через JS -->
-        </div>
-    </div>
-
-    <!-- Транзакции -->
-    <div id="transactions" class="section">
-        <button class="btn-primary" onclick="showAddTransactionModal()">+ Добавить транзакцию</button>
         
-        <div class="section-title">История операций</div>
-        <div class="transaction-list" id="allTransactions">
-            <!-- Заполнится через JS -->
+        <!-- Навигация -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('dashboard')">
+                <i class="fas fa-home"></i>
+                <span>Дашборд</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('transactions')">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Транзакции</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('goals')">
+                <i class="fas fa-bullseye"></i>
+                <span>Цели</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('investments')">
+                <i class="fas fa-chart-line"></i>
+                <span>Инвестиции</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('profile')">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </div>
         </div>
-    </div>
-
-    <!-- Цели -->
-    <div id="goals" class="section">
-        <button class="btn-primary" onclick="showAddGoalModal()">+ Новая цель</button>
         
-        <div class="section-title">Активные цели</div>
-        <div class="transaction-list" id="activeGoals">
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-category">Новый ноутбук</div>
-                    <div class="transaction-desc">техника</div>
-                    <div class="transaction-date">Срок: 2024-06-30 | 90 дн. осталось</div>
+        <!-- Дашборд -->
+        <div id="dashboardTab" class="tab-content active">
+            <div class="balance-card">
+                <div>Ваш баланс</div>
+                <div class="balance-amount" id="balanceAmount">25 000 ₽</div>
+                <div id="balanceChange" style="color: #4CAF50;">+25 000 ₽ за месяц</div>
+                <div style="font-size: 14px; opacity: 0.9;">Обновлено: 12:01</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card income">
+                    <div>Доходы</div>
+                    <div class="stat-value">120 000 ₽</div>
+                    <div style="font-size: 12px;">12 операций</div>
                 </div>
-                <div>25.0%</div>
-            </div>
-        </div>
-        
-        <div class="section-title">Достигнутые цели</div>
-        <div class="transaction-list" id="achievedGoals">
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-category">Новый телефон</div>
-                    <div class="transaction-desc">техника</div>
-                    <div class="transaction-date">Достигнута: 2024-01-15</div>
+                <div class="stat-card expense">
+                    <div>Расходы</div>
+                    <div class="stat-value">95 000 ₽</div>
+                    <div style="font-size: 12px;">19 операций</div>
                 </div>
-                <div>100%</div>
+                <div class="stat-card savings">
+                    <div>Сбережения</div>
+                    <div class="stat-value">20.8%</div>
+                    <div style="font-size: 12px;">от доходов</div>
+                </div>
+                <div class="stat-card investments">
+                    <div>Инвестиции</div>
+                    <div class="stat-value">25 000 ₽</div>
+                    <div style="font-size: 12px;">3 актива</div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Профиль -->
-    <div id="profile" class="section">
-        <div class="balance-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <div class="balance-label" id="profileNameLabel">Иван Дмитриенко</div>
-            <div class="balance-amount" style="font-size: 24px;" id="profileJob">IT-специалист</div>
-            <div class="balance-change" id="profileIncome">Основной доход: 120 000 ₽</div>
-        </div>
-
-        <div class="section-title">Главная финансовая цель</div>
-        <div class="metric-card">
-            <div class="metric-label">Накопить на квартиру</div>
-            <div class="metric-value">1 500 000 ₽</div>
-            <div class="metric-sub">Прогресс: 15%</div>
-        </div>
-
-        <div class="section-title">Настройки сбережений</div>
-        <div class="transaction-list">
-            <div class="transaction-item">
-                <div>Цель по сбережениям:</div>
-                <div>50 000 ₽/мес</div>
+            
+            <div class="quick-actions">
+                <button class="action-btn income" onclick="showTransactionModal('income')">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Доход</span>
+                </button>
+                <button class="action-btn expense" onclick="showTransactionModal('expense')">
+                    <i class="fas fa-minus-circle"></i>
+                    <span>Расход</span>
+                </button>
+                <button class="action-btn goal" onclick="showGoalModal()">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Цель</span>
+                </button>
+                <button class="action-btn investment" onclick="showInvestmentModal()">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Инвестиция</span>
+                </button>
             </div>
-            <div class="transaction-item">
-                <div>Доля инвестиций:</div>
-                <div>15%</div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Структура расходов</span>
+                    <span class="see-all">Подробнее →</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
             </div>
-        </div>
-
-        <div class="section-title">Настройки</div>
-        <div class="transaction-list">
-            <div class="transaction-item" onclick="exportData()" style="cursor: pointer;">
-                <div>📊 Экспорт данных</div>
-                <div>→</div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Персональные советы</span>
+                    <span class="see-all">Еще →</span>
+                </div>
+                <div>
+                    <div class="transaction-item" style="border-left-color: #f44336; background: rgba(244, 67, 54, 0.05);">
+                        <div>🟠 Попробуйте сократить расходы на развлечения на 20%</div>
+                    </div>
+                    <div class="transaction-item" style="border-left-color: #FF9800; background: rgba(255, 152, 0, 0.05);">
+                        <div>🔴 Откладывайте 20% от дохода каждый месяц</div>
+                    </div>
+                    <div class="transaction-item" style="border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.05);">
+                        <div>✅ Рассмотрите возможность инвестирования в акции ЛУКОЙЛ</div>
+                    </div>
+                </div>
             </div>
-            <div class="transaction-item" onclick="createReport()" style="cursor: pointer;">
-                <div>📈 Создать отчет</div>
-                <div>→</div>
-            </div>
-            <div class="transaction-item" onclick="inviteFriend()" style="cursor: pointer;">
-                <div>👥 Пригласить друга</div>
-                <div>→</div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Последние операции</span>
+                    <span class="see-all">Все →</span>
+                </div>
+                <div id="recentTransactions">
+                    <div class="transaction-item transaction-income">
+                        <div>
+                            <div style="font-weight: 600;">зарплата</div>
+                            <div style="font-size: 14px; color: #666;">Зарплата за январь</div>
+                            <div style="font-size: 12px; color: #999;">31.01.2024, 10:00</div>
+                        </div>
+                        <div class="transaction-amount">+120 000 ₽</div>
+                    </div>
+                    <div class="transaction-item transaction-expense">
+                        <div>
+                            <div style="font-weight: 600;">еда</div>
+                            <div style="font-size: 14px; color: #666;">Продукты на неделю</div>
+                            <div style="font-size: 12px; color: #999;">01.02.2024, 18:30</div>
+                        </div>
+                        <div class="transaction-amount">-25 000 ₽</div>
+                    </div>
+                    <div class="transaction-item transaction-expense">
+                        <div>
+                            <div style="font-weight: 600;">транспорт</div>
+                            <div style="font-size: 14px; color: #666;">Бензин</div>
+                            <div style="font-size: 12px; color: #999;">02.02.2024, 08:15</div>
+                        </div>
+                        <div class="transaction-amount">-5 000 ₽</div>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="metric-card" style="text-align: center; margin-top: 20px;">
-            <div class="metric-label">Участник с</div>
-            <div class="metric-value">2024-01-15</div>
+        <!-- Транзакции -->
+        <div id="transactionsTab" class="tab-content">
+            <button class="profile-btn" onclick="showTransactionModal('income')" style="margin-bottom: 20px;">
+                <i class="fas fa-plus"></i> Добавить операцию
+            </button>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Фильтры</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <select class="profile-btn" style="flex: 1; padding: 12px;">
+                        <option>Все типы</option>
+                        <option>Доходы</option>
+                        <option>Расходы</option>
+                    </select>
+                    <select class="profile-btn" style="flex: 1; padding: 12px;">
+                        <option>За месяц</option>
+                        <option>За неделю</option>
+                        <option>За год</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>История операций</span>
+                </div>
+                <div>
+                    <div class="transaction-item transaction-income">
+                        <div>
+                            <div style="font-weight: 600;">зарплата</div>
+                            <div style="font-size: 14px; color: #666;">Зарплата за январь</div>
+                            <div style="font-size: 12px; color: #999;">31.01.2024, 10:00</div>
+                        </div>
+                        <div class="transaction-amount">+120 000 ₽</div>
+                    </div>
+                    <div class="transaction-item transaction-expense">
+                        <div>
+                            <div style="font-weight: 600;">еда</div>
+                            <div style="font-size: 14px; color: #666;">Продукты на неделю</div>
+                            <div style="font-size: 12px; color: #999;">01.02.2024, 18:30</div>
+                        </div>
+                        <div class="transaction-amount">-25 000 ₽</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Цели -->
+        <div id="goalsTab" class="tab-content">
+            <button class="profile-btn" onclick="showGoalModal()" style="margin-bottom: 20px;">
+                <i class="fas fa-plus"></i> Новая цель
+            </button>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Активные цели</span>
+                </div>
+                <div class="goal-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="font-weight: 600; font-size: 16px;">Новый ноутбук</div>
+                        <div style="color: #666; font-size: 14px;">техника</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
+                        <div>25.0%</div>
+                        <div>90 дн. осталось</div>
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                        Срок: 2024-06-30 | Ежедневно: 833.33 ₽
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Достигнутые цели</span>
+                </div>
+                <div class="goal-item" style="background: rgba(76, 175, 80, 0.05); border-left-color: #4CAF50;">
+                    <div style="font-weight: 600; font-size: 16px; color: #4CAF50;">
+                        Новый телефон <span style="font-size: 20px;">✓</span>
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                        Достигнута: 2024-01-15
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Инвестиции -->
+        <div id="investmentsTab" class="tab-content">
+            <button class="profile-btn" onclick="showInvestmentModal()" style="margin-bottom: 20px;">
+                <i class="fas fa-plus"></i> Новая инвестиция
+            </button>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Портфель инвестиций</span>
+                </div>
+                <div class="investment-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">ЛУКОЙЛ</div>
+                            <div style="font-size: 14px; color: #666;">Акции • 10 шт.</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 600; font-size: 18px;">55 000 ₽</div>
+                            <div style="font-size: 14px; color: #4CAF50;">+5 000 ₽ (10.0%)</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        Инвестировано: 50 000 ₽ | Куплено: 2024-01-15
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Инвестиционные идеи</span>
+                </div>
+                <div class="investment-card">
+                    <div style="font-weight: 600; margin-bottom: 5px;">Акции ЛУКОЙЛ</div>
+                    <div style="font-size: 14px; margin-bottom: 10px; color: #666;">Высокие дивиденды, стабильный рост</div>
+                    <div style="font-size: 12px; color: #666;">Доходность: ~15% годовых</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ПРОФИЛЬ - НОВЫЙ ДИЗАЙН -->
+        <div id="profileTab" class="tab-content">
+            <!-- Шапка профиля с аватаркой -->
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">И</div>
+                <div class="profile-info">
+                    <h2 id="profileName">Иван Дмитриенко</h2>
+                    <p id="profileProfession">IT-специалист</p>
+                </div>
+            </div>
+            
+            <!-- Статистика в сетке -->
+            <div class="profile-stats-grid">
+                <div class="profile-stat">
+                    <div class="profile-stat-label">Основной доход</div>
+                    <div class="profile-stat-value" id="profileIncomeValue">120 000 ₽</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-label">Текущий баланс</div>
+                    <div class="profile-stat-value" id="profileBalance">25 000 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Карточка главной цели -->
+            <div class="profile-goal-card">
+                <h3>🎯 Главная финансовая цель</h3>
+                <div id="profileMainGoal">Накопить на квартиру</div>
+                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                    Целевая сумма: <strong>1 500 000 ₽</strong> • Прогресс: <strong>15%</strong>
+                </div>
+            </div>
+            
+            <!-- Настройки сбережений -->
+            <div class="profile-settings-card">
+                <h3>⚙️ Настройки сбережений</h3>
+                <div class="setting-item">
+                    <span>Цель по сбережениям:</span>
+                    <span style="font-weight: 600;" id="savingsGoal">50 000 ₽/мес</span>
+                </div>
+                <div class="setting-item">
+                    <span>Доля инвестиций:</span>
+                    <span style="font-weight: 600;" id="investmentPercentage">15%</span>
+                </div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <button class="profile-btn" onclick="exportData()">
+                <i class="fas fa-download"></i> Экспорт данных
+            </button>
+            <button class="profile-btn" onclick="generateReport()">
+                <i class="fas fa-file-pdf"></i> Создать отчет
+            </button>
+            <button class="profile-btn primary" onclick="inviteFriend()">
+                <i class="fas fa-user-plus"></i> Пригласить друга
+            </button>
+            
+            <!-- Дата регистрации -->
+            <div class="profile-date">
+                📅 Участник с <span id="profileJoinDate">2024-01-15</span>
+            </div>
         </div>
     </div>
-
-    <!-- Модальное окно добавления транзакции -->
-    <div id="addTransactionModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px;">
-            <h2 style="margin-bottom: 20px;">Добавить транзакцию</h2>
-            <input type="text" id="transDesc" placeholder="Описание" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;">
-            <input type="number" id="transAmount" placeholder="Сумма" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;">
-            <select id="transType" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                <option value="income">Доход</option>
-                <option value="expense">Расход</option>
-            </select>
-            <select id="transCategory" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;">
-                <option value="salary">Зарплата</option>
-                <option value="food">Еда</option>
-                <option value="transport">Транспорт</option>
-                <option value="entertainment">Развлечения</option>
-            </select>
-            <button onclick="addTransaction()" style="background: #007aff; color: white; border: none; padding: 12px 24px; border-radius: 8px; width: 100%; cursor: pointer;">Добавить</button>
-            <button onclick="hideModal()" style="background: #f0f0f0; color: #333; border: none; padding: 12px 24px; border-radius: 8px; width: 100%; margin-top: 8px; cursor: pointer;">Отмена</button>
-        </div>
-    </div>
-
+    
     <script>
         // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
+        let tg = window.Telegram.WebApp;
         
-        // Раскрываем на весь экран и инициализируем
         tg.expand();
         tg.ready();
         
         // Получаем данные пользователя
-        const user = tg.initDataUnsafe?.user || {};
-        console.log('Пользователь:', user);
-        
-        // Устанавливаем имя пользователя
-        if (user.first_name) {
-            document.getElementById('userName').textContent = `Финансовый Трекер`;
-            document.getElementById('profileNameLabel').textContent = `${user.first_name} ${user.last_name || ''}`;
-            document.getElementById('profileJob').textContent = user.username ? `@${user.username}` : 'Пользователь';
+        const initData = tg.initDataUnsafe;
+        if (initData.user) {
+            const user = initData.user;
+            
+            // Обновляем профиль
+            document.getElementById('profileAvatar').textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : '?';
+            document.getElementById('profileName').textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Пользователь';
+            document.getElementById('profileProfession').textContent = user.username ? `@${user.username}` : 'Telegram пользователь';
         }
         
-        // Обновляем дату
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').textContent = now.toLocaleDateString('ru-RU', options);
-        
-        // Навигация между разделами
-        const tabs = document.querySelectorAll('.nav-tab');
-        const sections = document.querySelectorAll('.section');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Убираем активный класс у всех
-                tabs.forEach(t => t.classList.remove('active'));
-                sections.forEach(s => s.classList.remove('active'));
-                
-                // Добавляем активный класс выбранному
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
+        // Навигация
+        function switchTab(tabName) {
+            // Скрываем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
-        });
+            
+            // Убираем активный класс со всех кнопок
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Показываем выбранную вкладку
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Активируем кнопку
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.querySelector('span').textContent === getTabTitle(tabName)) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Если переключились на дашборд - обновляем график
+            if (tabName === 'dashboard') {
+                initChart();
+            }
+        }
         
-        // Данные приложения (вместо БД)
-        let transactions = JSON.parse(localStorage.getItem('transactions')) || [
-            { id: 1, type: 'income', category: 'Зарплата', amount: 120000, description: 'Зарплата за январь', date: '31.01.2024' },
-            { id: 2, type: 'expense', category: 'Еда', amount: 25000, description: 'Продукты на неделю', date: '01.02.2024' },
-            { id: 3, type: 'expense', category: 'Транспорт', amount: 5000, description: 'Бензин', date: '02.02.2024' }
-        ];
+        function getTabTitle(tabName) {
+            const titles = {
+                'dashboard': 'Дашборд',
+                'transactions': 'Транзакции',
+                'goals': 'Цели',
+                'investments': 'Инвестиции',
+                'profile': 'Профиль'
+            };
+            return titles[tabName];
+        }
         
-        // Инициализация графика
+        // График расходов
         function initChart() {
-            const ctx = document.getElementById('expensesChart').getContext('2d');
+            const ctx = document.getElementById('expenseChart').getContext('2d');
             const chart = new Chart(ctx, {
-                type: 'pie',
+                type: 'doughnut',
                 data: {
                     labels: ['Еда', 'Жилье', 'Транспорт', 'Развлечения', 'Образование', 'Здоровье'],
                     datasets: [{
                         data: [7.4, 26.3, 8.4, 10.5, 15.8, 31.6],
                         backgroundColor: [
-                            '#FF6384',
-                            '#36A2EB',
-                            '#FFCE56',
-                            '#4BC0C0',
-                            '#9966FF',
-                            '#FF9F40'
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
                         ]
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
+                        legend: { position: 'bottom' }
                     }
                 }
             });
         }
         
-        // Отображение транзакций
-        function renderTransactions() {
-            const recentContainer = document.getElementById('recentTransactions');
-            const allContainer = document.getElementById('allTransactions');
-            
-            // Последние 3 транзакции
-            recentContainer.innerHTML = '';
-            transactions.slice(-3).reverse().forEach(trans => {
-                recentContainer.innerHTML += `
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-category">${trans.category}</div>
-                            <div class="transaction-desc">${trans.description}</div>
-                            <div class="transaction-date">${trans.date}</div>
-                        </div>
-                        <div class="transaction-amount ${trans.type}">
-                            ${trans.type === 'income' ? '+' : '-'}${trans.amount.toLocaleString()} ₽
-                        </div>
-                    </div>
-                `;
-            });
-            
-            // Все транзакции
-            allContainer.innerHTML = '';
-            transactions.reverse().forEach(trans => {
-                allContainer.innerHTML += `
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-category">${trans.category}</div>
-                            <div class="transaction-desc">${trans.description}</div>
-                            <div class="transaction-date">${trans.date}</div>
-                        </div>
-                        <div class="transaction-amount ${trans.type}">
-                            ${trans.type === 'income' ? '+' : '-'}${trans.amount.toLocaleString()} ₽
-                        </div>
-                    </div>
-                `;
-            });
+        // Функции модальных окон
+        function showTransactionModal(type) {
+            tg.showAlert(`Добавление ${type === 'income' ? 'дохода' : 'расхода'} будет в следующем обновлении`);
         }
         
-        // Функции модального окна
-        function showAddTransactionModal() {
-            document.getElementById('addTransactionModal').style.display = 'flex';
+        function showGoalModal() {
+            tg.showAlert('Создание новой цели будет в следующем обновлении');
         }
         
-        function hideModal() {
-            document.getElementById('addTransactionModal').style.display = 'none';
+        function showInvestmentModal() {
+            tg.showAlert('Добавление инвестиции будет в следующем обновлении');
         }
         
-        function addTransaction() {
-            const desc = document.getElementById('transDesc').value;
-            const amount = parseInt(document.getElementById('transAmount').value);
-            const type = document.getElementById('transType').value;
-            const category = document.getElementById('transCategory').value;
-            
-            if (!desc || !amount) {
-                alert('Заполните все поля!');
-                return;
-            }
-            
-            const newTransaction = {
-                id: Date.now(),
-                type,
-                category,
-                amount,
-                description: desc,
-                date: new Date().toLocaleDateString('ru-RU')
-            };
-            
-            transactions.push(newTransaction);
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            
-            // Обновляем баланс
-            const balanceEl = document.getElementById('balanceAmount');
-            let currentBalance = parseInt(balanceEl.textContent.replace(/\s/g, '').replace('₽', ''));
-            
-            if (type === 'income') {
-                currentBalance += amount;
-            } else {
-                currentBalance -= amount;
-            }
-            
-            balanceEl.textContent = currentBalance.toLocaleString() + ' ₽';
-            
-            // Обновляем отображение
-            renderTransactions();
-            hideModal();
-            
-            // Очищаем поля
-            document.getElementById('transDesc').value = '';
-            document.getElementById('transAmount').value = '';
-        }
-        
-        // Другие функции
-        function showAddGoalModal() {
-            alert('Функция добавления целей будет доступна в следующем обновлении!');
-        }
-        
+        // Функции профиля
         function exportData() {
-            const data = {
-                user: user,
-                transactions: transactions,
-                date: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'finguide-export.json';
-            a.click();
-            
-            alert('Данные экспортированы!');
+            tg.showAlert('Экспорт данных в формате CSV');
         }
         
-        function createReport() {
-            alert('Отчет будет отправлен вам в Telegram!');
-            // Здесь можно добавить логику генерации отчета
+        function generateReport() {
+            tg.showAlert('Создание PDF отчета');
         }
         
         function inviteFriend() {
-            const referralLink = `https://t.me/${tg.initDataUnsafe?.user?.username || 'your_bot'}?start=ref_${user.id}`;
-            tg.showAlert(`Ваша реферальная ссылка: ${referralLink}\n\nПоделитесь ей с друзьями!`);
+            const referralLink = `https://t.me/${tg.initDataUnsafe?.user?.username || 'your_bot'}?start=ref_${tg.initDataUnsafe?.user?.id || '123'}`;
+            tg.showAlert(`Пригласите друга по ссылке: ${referralLink}`);
         }
         
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', () => {
+            // Устанавливаем текущую дату
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('ru-RU', options);
+            
+            // Инициализируем график
             initChart();
-            renderTransactions();
-            
-            // Добавляем обработчик клавиши Escape для закрытия модалки
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') hideModal();
-            });
-            
-            // Закрытие модалки при клике вне ее
-            document.getElementById('addTransactionModal').addEventListener('click', (e) => {
-                if (e.target.id === 'addTransactionModal') hideModal();
-            });
         });
     </script>
 </body>
