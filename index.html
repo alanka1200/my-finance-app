@@ -2,886 +2,1816 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Финансовый Трекер | Telegram Web App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance Tracker</title>
     <style>
-        /* БАЗОВЫЕ СТИЛИ из первого файла (основной дизайн) */
-        :root {
-            --primary-color: #40a7e3;
-            --income-color: #4CAF50;
-            --expense-color: #f44336;
-            --goal-color: #FF9800;
-            --investment-color: #9C27B0;
-            --savings-color: #00BCD4;
-            --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --text-color: var(--tg-theme-text-color, #000000);
-            --card-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
-            --border-color: var(--tg-theme-hint-color, #e0e0e0);
-            --button-color: var(--tg-theme-button-color, #40a7e3);
-            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-color);
-            padding: 16px;
+            background: #f5f7fa;
+            color: #333;
             max-width: 100%;
             overflow-x: hidden;
-            line-height: 1.6;
         }
-        
-        .container {
+
+        .app-container {
             max-width: 500px;
             margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        
+
+        /* Шапка */
         .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
         }
-        
+
         .header h1 {
-            font-size: 22px;
-            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 600;
             margin-bottom: 5px;
         }
-        
+
+        .header .date {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
         /* Навигация */
         .nav-tabs {
             display: flex;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-            background: var(--bg-color);
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
             position: sticky;
             top: 0;
             z-index: 100;
-            padding-top: 10px;
         }
-        
+
         .nav-tab {
             flex: 1;
-            padding: 12px;
+            padding: 15px 10px;
             text-align: center;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
+            font-size: 14px;
             font-weight: 500;
-            color: var(--tg-theme-hint-color, #666);
+            color: #666;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
+
         .nav-tab.active {
-            border-bottom-color: var(--primary-color);
-            color: var(--primary-color);
-            font-weight: 600;
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f8f9ff;
         }
-        
-        .nav-tab i {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 20px;
-        }
-        
-        /* Вкладки */
+
+        /* Контент вкладок */
         .tab-content {
             display: none;
+            padding: 20px;
         }
-        
+
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.3s;
         }
-        
-        /* Карточка баланса */
-        .balance-card {
-            background: linear-gradient(135deg, var(--primary-color), #2481cc);
-            color: white;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Карточки */
+        .card {
+            background: white;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #eef0f3;
+        }
+
+        /* Баланс */
+        .balance-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
             margin-bottom: 20px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
-        
+
         .balance-amount {
-            font-size: 42px;
-            font-weight: bold;
-            margin: 15px 0;
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
-        /* Сетка метрик */
+
+        .balance-change {
+            font-size: 14px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .balance-change.positive {
+            color: #4caf50;
+        }
+
+        .balance-change.negative {
+            color: #f44336;
+        }
+
+        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-        
-        .stat-card.income { border-top: 4px solid var(--income-color); }
-        .stat-card.expense { border-top: 4px solid var(--expense-color); }
-        .stat-card.savings { border-top: 4px solid var(--savings-color); }
-        .stat-card.investments { border-top: 4px solid var(--investment-color); }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-        
-        .stat-card.income .stat-value { color: var(--income-color); }
-        .stat-card.expense .stat-value { color: var(--expense-color); }
-        .stat-card.savings .stat-value { color: var(--savings-color); }
-        .stat-card.investments .stat-value { color: var(--investment-color); }
-        
-        /* Блоки быстрых действий и секций (старый стиль) */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin: 20px 0;
         }
-        
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            background: var(--card-bg);
-            border: none;
+
+        .stat-item {
+            background: #f8f9ff;
             border-radius: 12px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--text-color);
-            border: 1px solid transparent;
-        }
-        
-        .action-btn:hover {
-            border-color: var(--primary-color);
-        }
-        
-        .action-btn i {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        .section {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .see-all {
-            font-size: 14px;
-            color: var(--primary-color);
-            cursor: pointer;
-        }
-        
-        /* График и транзакции (старый стиль) */
-        .chart-container {
-            height: 250px;
-            margin: 15px 0;
-        }
-        
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: var(--bg-color);
-            border-radius: 12px;
-            margin-bottom: 8px;
-            border-left: 5px solid;
-            border: 1px solid var(--border-color);
-        }
-        
-        .transaction-income { border-left-color: var(--income-color); }
-        .transaction-expense { border-left-color: var(--expense-color); }
-        
-        .transaction-amount {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        .transaction-income .transaction-amount { color: var(--income-color); }
-        .transaction-expense .transaction-amount { color: var(--expense-color); }
-        
-        /* Цели и инвестиции (старый стиль) */
-        .goal-item {
-            background: var(--bg-color);
             padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--goal-color);
+            text-align: center;
+            border: 1px solid #eef0f3;
         }
-        
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Прогресс бар */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
         .progress-bar {
-            height: 10px;
-            background: var(--border-color);
-            border-radius: 5px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
             overflow: hidden;
-            margin: 10px 0;
         }
-        
+
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--goal-color), #FFB74D);
-            border-radius: 5px;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            border-radius: 4px;
+            transition: width 0.5s ease;
         }
-        
-        .investment-card {
-            background: var(--bg-color);
+
+        /* Список транзакций */
+        .transaction-list {
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
             padding: 15px;
-            border-radius: 12px;
+            background: white;
+            border-radius: 10px;
             margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--investment-color);
+            border-left: 4px solid #667eea;
         }
-        
-        /* ПРОФИЛЬ - НОВЫЙ СТИЛЬ (из твоего файла) */
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), #2481cc);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
             margin-right: 15px;
-        }
-        
-        .profile-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        
-        .profile-info h2 {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        .profile-info p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .profile-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        
-        .profile-stat {
-            background: var(--bg-color);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .profile-stat-label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .profile-stat-value {
             font-size: 18px;
+        }
+
+        .transaction-icon.income {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .transaction-icon.expense {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-category {
             font-weight: 600;
+            margin-bottom: 3px;
         }
-        
-        .profile-goal-card {
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), transparent);
-            padding: 18px;
-            border-radius: 15px;
+
+        .transaction-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .transaction-date {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .transaction-amount.positive {
+            color: #4caf50;
+        }
+
+        .transaction-amount.negative {
+            color: #f44336;
+        }
+
+        /* Формы */
+        .form-group {
             margin-bottom: 20px;
-            border-left: 4px solid var(--goal-color);
-            border: 1px solid rgba(255, 152, 0, 0.2);
         }
-        
-        .profile-goal-card h3 {
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 16px;
-            margin-bottom: 10px;
-            color: var(--goal-color);
+            transition: border-color 0.3s;
         }
-        
-        .profile-settings-card {
-            background: var(--bg-color);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
         }
-        
-        .profile-settings-card h3 {
-            font-size: 16px;
+
+        .form-row {
+            display: flex;
+            gap: 15px;
             margin-bottom: 15px;
         }
-        
-        .setting-item {
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #4caf50;
+        }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-secondary {
+            background: #757575;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* Инвестиции */
+        .investment-card {
+            border-left: 4px solid #ff9800;
+        }
+
+        .investment-profit {
+            font-size: 14px;
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        /* Советы */
+        .advice-list {
+            margin-top: 20px;
+        }
+
+        .advice-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: #fff8e1;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .advice-icon {
+            font-size: 20px;
+            margin-right: 15px;
+            margin-top: 2px;
+        }
+
+        .advice-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Диаграмма */
+        .chart-container {
+            height: 200px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s, slideOut 0.3s 2.7s;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tab {
+                font-size: 12px;
+                padding: 12px 5px;
+            }
+            
+            .balance-amount {
+                font-size: 28px;
+            }
+        }
+
+        /* Загрузка */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 90%;
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
-        
-        .setting-item:last-child {
-            border-bottom: none;
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
         }
-        
-        .profile-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 16px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .profile-btn:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        
-        .profile-btn i {
-            margin-right: 10px;
-            color: var(--primary-color);
-        }
-        
-        .profile-btn.primary {
-            background: var(--button-color);
-            color: var(--button-text-color);
+
+        .modal-close {
+            background: none;
             border: none;
-        }
-        
-        .profile-btn.primary i {
-            color: var(--button-text-color);
-        }
-        
-        .profile-date {
-            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
             color: #666;
+        }
+
+        /* Фильтры */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
             font-size: 14px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        
-        /* Вспомогательные классы */
-        .hidden { display: none; }
-        .pulse { animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
         }
-        
-        @media (max-width: 480px) {
-            .quick-actions { grid-template-columns: repeat(2, 1fr); }
-            .action-btn span { font-size: 12px; }
-            .balance-amount { font-size: 36px; }
-            .profile-stats-grid { grid-template-columns: 1fr; }
+
+        /* Реферальная система */
+        .referral-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .referral-link {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            word-break: break-all;
+            border: 2px dashed #667eea;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Пустые состояния */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
         <!-- Шапка -->
         <div class="header">
-            <h1><i class="fas fa-chart-line pulse"></i> Финансовый Трекер</h1>
-            <div id="currentDate">Понедельник, 19 января 2026 г.</div>
+            <h1>Finance Tracker</h1>
+            <div class="date" id="currentDate">понедельник, 19 января 2026 г.</div>
         </div>
-        
+
         <!-- Навигация -->
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="switchTab('dashboard')">
-                <i class="fas fa-home"></i>
-                <span>Дашборд</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('transactions')">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Транзакции</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('goals')">
-                <i class="fas fa-bullseye"></i>
-                <span>Цели</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('investments')">
-                <i class="fas fa-chart-line"></i>
-                <span>Инвестиции</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('profile')">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </div>
+            <div class="nav-tab active" onclick="switchTab('dashboard')">📊 Дашборд</div>
+            <div class="nav-tab" onclick="switchTab('transactions')">💸 Транзакции</div>
+            <div class="nav-tab" onclick="switchTab('goals')">🎯 Цели</div>
+            <div class="nav-tab" onclick="switchTab('investments')">📈 Инвестиции</div>
+            <div class="nav-tab" onclick="switchTab('profile')">👤 Профиль</div>
         </div>
-        
-        <!-- Дашборд -->
-        <div id="dashboardTab" class="tab-content active">
-            <div class="balance-card">
-                <div>Ваш баланс</div>
-                <div class="balance-amount" id="balanceAmount">25 000 ₽</div>
-                <div id="balanceChange" style="color: #4CAF50;">+25 000 ₽ за месяц</div>
-                <div style="font-size: 14px; opacity: 0.9;">Обновлено: 12:01</div>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card income">
-                    <div>Доходы</div>
-                    <div class="stat-value">120 000 ₽</div>
-                    <div style="font-size: 12px;">12 операций</div>
-                </div>
-                <div class="stat-card expense">
-                    <div>Расходы</div>
-                    <div class="stat-value">95 000 ₽</div>
-                    <div style="font-size: 12px;">19 операций</div>
-                </div>
-                <div class="stat-card savings">
-                    <div>Сбережения</div>
-                    <div class="stat-value">20.8%</div>
-                    <div style="font-size: 12px;">от доходов</div>
-                </div>
-                <div class="stat-card investments">
-                    <div>Инвестиции</div>
-                    <div class="stat-value">25 000 ₽</div>
-                    <div style="font-size: 12px;">3 актива</div>
-                </div>
-            </div>
-            
-            <div class="quick-actions">
-                <button class="action-btn income" onclick="showTransactionModal('income')">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Доход</span>
-                </button>
-                <button class="action-btn expense" onclick="showTransactionModal('expense')">
-                    <i class="fas fa-minus-circle"></i>
-                    <span>Расход</span>
-                </button>
-                <button class="action-btn goal" onclick="showGoalModal()">
-                    <i class="fas fa-bullseye"></i>
-                    <span>Цель</span>
-                </button>
-                <button class="action-btn investment" onclick="showInvestmentModal()">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Инвестиция</span>
-                </button>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Структура расходов</span>
-                    <span class="see-all">Подробнее →</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="expenseChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Персональные советы</span>
-                    <span class="see-all">Еще →</span>
-                </div>
-                <div>
-                    <div class="transaction-item" style="border-left-color: #f44336; background: rgba(244, 67, 54, 0.05);">
-                        <div>🟠 Попробуйте сократить расходы на развлечения на 20%</div>
-                    </div>
-                    <div class="transaction-item" style="border-left-color: #FF9800; background: rgba(255, 152, 0, 0.05);">
-                        <div>🔴 Откладывайте 20% от дохода каждый месяц</div>
-                    </div>
-                    <div class="transaction-item" style="border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.05);">
-                        <div>✅ Рассмотрите возможность инвестирования в акции ЛУКОЙЛ</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Последние операции</span>
-                    <span class="see-all">Все →</span>
-                </div>
-                <div id="recentTransactions">
-                    <div class="transaction-item transaction-income">
-                        <div>
-                            <div style="font-weight: 600;">зарплата</div>
-                            <div style="font-size: 14px; color: #666;">Зарплата за январь</div>
-                            <div style="font-size: 12px; color: #999;">31.01.2024, 10:00</div>
-                        </div>
-                        <div class="transaction-amount">+120 000 ₽</div>
-                    </div>
-                    <div class="transaction-item transaction-expense">
-                        <div>
-                            <div style="font-weight: 600;">еда</div>
-                            <div style="font-size: 14px; color: #666;">Продукты на неделю</div>
-                            <div style="font-size: 12px; color: #999;">01.02.2024, 18:30</div>
-                        </div>
-                        <div class="transaction-amount">-25 000 ₽</div>
-                    </div>
-                    <div class="transaction-item transaction-expense">
-                        <div>
-                            <div style="font-weight: 600;">транспорт</div>
-                            <div style="font-size: 14px; color: #666;">Бензин</div>
-                            <div style="font-size: 12px; color: #999;">02.02.2024, 08:15</div>
-                        </div>
-                        <div class="transaction-amount">-5 000 ₽</div>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Контент вкладок -->
+        <div id="dashboard" class="tab-content active">
+            <!-- Будет заполнено JavaScript -->
         </div>
-        
-        <!-- Транзакции -->
-        <div id="transactionsTab" class="tab-content">
-            <button class="profile-btn" onclick="showTransactionModal('income')" style="margin-bottom: 20px;">
-                <i class="fas fa-plus"></i> Добавить операцию
-            </button>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Фильтры</span>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <select class="profile-btn" style="flex: 1; padding: 12px;">
-                        <option>Все типы</option>
-                        <option>Доходы</option>
-                        <option>Расходы</option>
-                    </select>
-                    <select class="profile-btn" style="flex: 1; padding: 12px;">
-                        <option>За месяц</option>
-                        <option>За неделю</option>
-                        <option>За год</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>История операций</span>
-                </div>
-                <div>
-                    <div class="transaction-item transaction-income">
-                        <div>
-                            <div style="font-weight: 600;">зарплата</div>
-                            <div style="font-size: 14px; color: #666;">Зарплата за январь</div>
-                            <div style="font-size: 12px; color: #999;">31.01.2024, 10:00</div>
-                        </div>
-                        <div class="transaction-amount">+120 000 ₽</div>
-                    </div>
-                    <div class="transaction-item transaction-expense">
-                        <div>
-                            <div style="font-weight: 600;">еда</div>
-                            <div style="font-size: 14px; color: #666;">Продукты на неделю</div>
-                            <div style="font-size: 12px; color: #999;">01.02.2024, 18:30</div>
-                        </div>
-                        <div class="transaction-amount">-25 000 ₽</div>
-                    </div>
-                </div>
-            </div>
+
+        <div id="transactions" class="tab-content">
+            <!-- Будет заполнено JavaScript -->
         </div>
-        
-        <!-- Цели -->
-        <div id="goalsTab" class="tab-content">
-            <button class="profile-btn" onclick="showGoalModal()" style="margin-bottom: 20px;">
-                <i class="fas fa-plus"></i> Новая цель
-            </button>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Активные цели</span>
-                </div>
-                <div class="goal-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <div style="font-weight: 600; font-size: 16px;">Новый ноутбук</div>
-                        <div style="color: #666; font-size: 14px;">техника</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 25%"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
-                        <div>25.0%</div>
-                        <div>90 дн. осталось</div>
-                    </div>
-                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
-                        Срок: 2024-06-30 | Ежедневно: 833.33 ₽
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Достигнутые цели</span>
-                </div>
-                <div class="goal-item" style="background: rgba(76, 175, 80, 0.05); border-left-color: #4CAF50;">
-                    <div style="font-weight: 600; font-size: 16px; color: #4CAF50;">
-                        Новый телефон <span style="font-size: 20px;">✓</span>
-                    </div>
-                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
-                        Достигнута: 2024-01-15
-                    </div>
-                </div>
-            </div>
+
+        <div id="goals" class="tab-content">
+            <!-- Будет заполнено JavaScript -->
         </div>
-        
-        <!-- Инвестиции -->
-        <div id="investmentsTab" class="tab-content">
-            <button class="profile-btn" onclick="showInvestmentModal()" style="margin-bottom: 20px;">
-                <i class="fas fa-plus"></i> Новая инвестиция
-            </button>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Портфель инвестиций</span>
-                </div>
-                <div class="investment-card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 16px;">ЛУКОЙЛ</div>
-                            <div style="font-size: 14px; color: #666;">Акции • 10 шт.</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; font-size: 18px;">55 000 ₽</div>
-                            <div style="font-size: 14px; color: #4CAF50;">+5 000 ₽ (10.0%)</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 14px; color: #666;">
-                        Инвестировано: 50 000 ₽ | Куплено: 2024-01-15
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span>Инвестиционные идеи</span>
-                </div>
-                <div class="investment-card">
-                    <div style="font-weight: 600; margin-bottom: 5px;">Акции ЛУКОЙЛ</div>
-                    <div style="font-size: 14px; margin-bottom: 10px; color: #666;">Высокие дивиденды, стабильный рост</div>
-                    <div style="font-size: 12px; color: #666;">Доходность: ~15% годовых</div>
-                </div>
-            </div>
+
+        <div id="investments" class="tab-content">
+            <!-- Будет заполнено JavaScript -->
         </div>
-        
-        <!-- ПРОФИЛЬ - НОВЫЙ ДИЗАЙН -->
-        <div id="profileTab" class="tab-content">
-            <!-- Шапка профиля с аватаркой -->
-            <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">И</div>
-                <div class="profile-info">
-                    <h2 id="profileName">Иван Дмитриенко</h2>
-                    <p id="profileProfession">IT-специалист</p>
-                </div>
-            </div>
-            
-            <!-- Статистика в сетке -->
-            <div class="profile-stats-grid">
-                <div class="profile-stat">
-                    <div class="profile-stat-label">Основной доход</div>
-                    <div class="profile-stat-value" id="profileIncomeValue">120 000 ₽</div>
-                </div>
-                <div class="profile-stat">
-                    <div class="profile-stat-label">Текущий баланс</div>
-                    <div class="profile-stat-value" id="profileBalance">25 000 ₽</div>
-                </div>
-            </div>
-            
-            <!-- Карточка главной цели -->
-            <div class="profile-goal-card">
-                <h3>🎯 Главная финансовая цель</h3>
-                <div id="profileMainGoal">Накопить на квартиру</div>
-                <div style="margin-top: 10px; font-size: 14px; color: #666;">
-                    Целевая сумма: <strong>1 500 000 ₽</strong> • Прогресс: <strong>15%</strong>
-                </div>
-            </div>
-            
-            <!-- Настройки сбережений -->
-            <div class="profile-settings-card">
-                <h3>⚙️ Настройки сбережений</h3>
-                <div class="setting-item">
-                    <span>Цель по сбережениям:</span>
-                    <span style="font-weight: 600;" id="savingsGoal">50 000 ₽/мес</span>
-                </div>
-                <div class="setting-item">
-                    <span>Доля инвестиций:</span>
-                    <span style="font-weight: 600;" id="investmentPercentage">15%</span>
-                </div>
-            </div>
-            
-            <!-- Кнопки действий -->
-            <button class="profile-btn" onclick="exportData()">
-                <i class="fas fa-download"></i> Экспорт данных
-            </button>
-            <button class="profile-btn" onclick="generateReport()">
-                <i class="fas fa-file-pdf"></i> Создать отчет
-            </button>
-            <button class="profile-btn primary" onclick="inviteFriend()">
-                <i class="fas fa-user-plus"></i> Пригласить друга
-            </button>
-            
-            <!-- Дата регистрации -->
-            <div class="profile-date">
-                📅 Участник с <span id="profileJoinDate">2024-01-15</span>
-            </div>
+
+        <div id="profile" class="tab-content">
+            <!-- Будет заполнено JavaScript -->
         </div>
     </div>
-    
+
+    <!-- Модальное окно добавления транзакции -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Добавить транзакцию</div>
+                <button class="modal-close" onclick="closeModal('transactionModal')">×</button>
+            </div>
+            <form id="transactionForm">
+                <input type="hidden" id="user_id">
+                <div class="form-group">
+                    <label class="form-label">Тип операции</label>
+                    <select class="form-select" id="transactionType" required>
+                        <option value="income">➕ Доход</option>
+                        <option value="expense">➖ Расход</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" id="transactionCategory" required>
+                        <option value="зарплата">💼 Зарплата</option>
+                        <option value="еда">🍎 Еда</option>
+                        <option value="транспорт">🚗 Транспорт</option>
+                        <option value="жилье">🏠 Жилье</option>
+                        <option value="развлечения">🎮 Развлечения</option>
+                        <option value="образование">📚 Образование</option>
+                        <option value="здоровье">🏥 Здоровье</option>
+                        <option value="инвестиции">📈 Инвестиции</option>
+                        <option value="другое">📦 Другое</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Сумма (₽)</label>
+                    <input type="number" class="form-input" id="transactionAmount" 
+                           placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <input type="text" class="form-input" id="transactionDescription" 
+                           placeholder="Краткое описание операции" maxlength="100">
+                </div>
+                <button type="submit" class="btn">💾 Сохранить транзакцию</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления цели -->
+    <div id="goalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Новая финансовая цель</div>
+                <button class="modal-close" onclick="closeModal('goalModal')">×</button>
+            </div>
+            <form id="goalForm">
+                <input type="hidden" id="goalUserId">
+                <div class="form-group">
+                    <label class="form-label">Название цели</label>
+                    <input type="text" class="form-input" id="goalName" 
+                           placeholder="Например: Новый ноутбук" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" id="goalCategory" required>
+                        <option value="техника">💻 Техника</option>
+                        <option value="путешествие">✈️ Путешествие</option>
+                        <option value="автомобиль">🚗 Автомобиль</option>
+                        <option value="недвижимость">🏠 Недвижимость</option>
+                        <option value="образование">📚 Образование</option>
+                        <option value="другое">📦 Другое</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Текущая сумма (₽)</label>
+                        <input type="number" class="form-input" id="goalCurrent" 
+                               placeholder="0" min="0" step="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Целевая сумма (₽)</label>
+                        <input type="number" class="form-input" id="goalTarget" 
+                               placeholder="100000" min="1" step="1000" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дедлайн</label>
+                    <input type="date" class="form-input" id="goalDeadline" required>
+                </div>
+                <button type="submit" class="btn btn-success">🎯 Создать цель</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления инвестиции -->
+    <div id="investmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Добавить инвестицию</div>
+                <button class="modal-close" onclick="closeModal('investmentModal')">×</button>
+            </div>
+            <form id="investmentForm">
+                <input type="hidden" id="investmentUserId">
+                <div class="form-group">
+                    <label class="form-label">Название</label>
+                    <input type="text" class="form-input" id="investmentName" 
+                           placeholder="Например: ЛУКОЙЛ" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Тип</label>
+                    <select class="form-select" id="investmentType" required>
+                        <option value="Акции">📊 Акции</option>
+                        <option value="Криптовалюта">₿ Криптовалюта</option>
+                        <option value="Облигации">📄 Облигации</option>
+                        <option value="Депозит">🏦 Депозит</option>
+                        <option value="Фонды">📈 Фонды</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Количество</label>
+                        <input type="text" class="form-input" id="investmentCount" 
+                               placeholder="10 шт.">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Текущая стоимость (₽)</label>
+                        <input type="number" class="form-input" id="investmentAmount" 
+                               placeholder="50000" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Инвестированная сумма (₽)</label>
+                    <input type="number" class="form-input" id="investmentInvested" 
+                           placeholder="45000" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дата покупки</label>
+                    <input type="date" class="form-input" id="investmentBuyDate" required>
+                </div>
+                <button type="submit" class="btn btn-success">💎 Добавить инвестицию</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
     <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        
-        tg.expand();
-        tg.ready();
-        
-        // Получаем данные пользователя
-        const initData = tg.initDataUnsafe;
-        if (initData.user) {
-            const user = initData.user;
+        // Глобальные переменные
+        let currentUser = null;
+        let currentTab = 'dashboard';
+        const API_URL = 'http://localhost:8080'; // Измените на ваш URL
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Устанавливаем текущую дату
+            updateCurrentDate();
             
-            // Обновляем профиль
-            document.getElementById('profileAvatar').textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : '?';
-            document.getElementById('profileName').textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Пользователь';
-            document.getElementById('profileProfession').textContent = user.username ? `@${user.username}` : 'Telegram пользователь';
-        }
-        
-        // Навигация
+            // Получаем user_id из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id') || urlParams.get('user') || '123456';
+            
+            // Загружаем данные пользователя
+            await loadUserData(userId);
+            
+            // Инициализируем формы
+            initForms();
+            
+            // Показываем дашборд
+            renderDashboard();
+            
+            // Тестовое уведомление
+            showNotification('Финансовый трекер загружен!', 'success');
+        });
+
+        // Функции навигации
         function switchTab(tabName) {
             // Скрываем все вкладки
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Убираем активный класс со всех кнопок
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
+            // Убираем активный класс у всех кнопок
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
             });
             
             // Показываем выбранную вкладку
-            document.getElementById(tabName + 'Tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
             
             // Активируем кнопку
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                if (tab.querySelector('span').textContent === getTabTitle(tabName)) {
-                    tab.classList.add('active');
-                }
-            });
+            document.querySelector(`.nav-tab[onclick*="${tabName}"]`).classList.add('active');
             
-            // Если переключились на дашборд - обновляем график
-            if (tabName === 'dashboard') {
-                initChart();
+            // Обновляем содержимое вкладки
+            currentTab = tabName;
+            
+            switch(tabName) {
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'transactions':
+                    renderTransactions();
+                    break;
+                case 'goals':
+                    renderGoals();
+                    break;
+                case 'investments':
+                    renderInvestments();
+                    break;
+                case 'profile':
+                    renderProfile();
+                    break;
             }
         }
-        
-        function getTabTitle(tabName) {
-            const titles = {
-                'dashboard': 'Дашборд',
-                'transactions': 'Транзакции',
-                'goals': 'Цели',
-                'investments': 'Инвестиции',
-                'profile': 'Профиль'
+
+        // Обновление текущей даты
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
             };
-            return titles[tabName];
+            const dateStr = now.toLocaleDateString('ru-RU', options);
+            document.getElementById('currentDate').textContent = dateStr;
         }
-        
-        // График расходов
-        function initChart() {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Еда', 'Жилье', 'Транспорт', 'Развлечения', 'Образование', 'Здоровье'],
-                    datasets: [{
-                        data: [7.4, 26.3, 8.4, 10.5, 15.8, 31.6],
-                        backgroundColor: [
-                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
+
+        // Загрузка данных пользователя
+        async function loadUserData(userId) {
+            try {
+                showLoading();
+                
+                const response = await fetch(`${API_URL}/api/user_data?user_id=${userId}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    // Создаем тестового пользователя
+                    currentUser = createTestUser(userId);
+                    showNotification('Создан тестовый пользователь', 'info');
+                } else {
+                    currentUser = data;
+                }
+                
+                hideLoading();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                currentUser = createTestUser(userId);
+                showNotification('Используются тестовые данные', 'warning');
+                hideLoading();
+            }
+        }
+
+        // Создание тестового пользователя
+        function createTestUser(userId) {
+            return {
+                user_id: userId,
+                first_name: 'Иван',
+                username: 'ivan_dmitrienko',
+                join_date: '2024-01-15',
+                balance: 25000,
+                monthly_income: 120000,
+                monthly_expenses: 95000,
+                savings_percent: 20.8,
+                investments_total: 25000,
+                financial_health: 75,
+                main_goal: 'Накопить на квартиру',
+                savings_goal: 50000,
+                investment_percent: 15,
+                transactions: [
+                    {
+                        id: 1,
+                        type: 'income',
+                        category: 'зарплата',
+                        amount: 120000,
+                        description: 'Зарплата за январь',
+                        date: '31.01.2024, 10:00'
+                    },
+                    {
+                        id: 2,
+                        type: 'expense',
+                        category: 'еда',
+                        amount: 25000,
+                        description: 'Продукты на неделю',
+                        date: '01.02.2024, 18:30'
+                    },
+                    {
+                        id: 3,
+                        type: 'expense',
+                        category: 'транспорт',
+                        amount: 5000,
+                        description: 'Бензин',
+                        date: '02.02.2024, 14:15'
                     }
+                ],
+                goals: [
+                    {
+                        id: 1,
+                        name: 'Новый ноутбук',
+                        category: 'техника',
+                        current: 25000,
+                        target: 100000,
+                        progress: 25.0,
+                        days_left: 90,
+                        deadline: '2024-06-30',
+                        daily: 833.33,
+                        created: '2024-01-15'
+                    },
+                    {
+                        id: 2,
+                        name: 'Путешествие в Турцию',
+                        category: 'путешествие',
+                        current: 33333,
+                        target: 100000,
+                        progress: 33.3,
+                        days_left: 135,
+                        deadline: '2024-08-15',
+                        daily: 740.74,
+                        created: '2024-01-20'
+                    }
+                ],
+                investments: [
+                    {
+                        id: 1,
+                        name: 'ЛУКОЙЛ',
+                        type: 'Акции',
+                        amount: 55000,
+                        count: '10 шт.',
+                        invested: 50000,
+                        profit: 5000,
+                        profit_percent: 10.0,
+                        buy_date: '2024-01-15'
+                    },
+                    {
+                        id: 2,
+                        name: 'Bitcoin',
+                        type: 'Криптовалюта',
+                        amount: 25000,
+                        count: '0.0005 шт.',
+                        invested: 20000,
+                        profit: 5000,
+                        profit_percent: 25.0,
+                        buy_date: '2024-02-01'
+                    },
+                    {
+                        id: 3,
+                        name: 'Сбербанк',
+                        type: 'Акции',
+                        amount: 32000,
+                        count: '15 шт.',
+                        invested: 30000,
+                        profit: 2000,
+                        profit_percent: 6.7,
+                        buy_date: '2024-01-20'
+                    }
+                ]
+            };
+        }
+
+        // Рендер дашборда
+        function renderDashboard() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('dashboard');
+            
+            const html = `
+                <!-- Баланс -->
+                <div class="balance-card">
+                    <div style="font-size: 14px; opacity: 0.9;">Ваш баланс</div>
+                    <div class="balance-amount">${formatCurrency(currentUser.balance)}</div>
+                    <div class="balance-change positive">
+                        <span>+${formatCurrency(currentUser.balance)} за месяц</span>
+                    </div>
+                    <div style="font-size: 12px; margin-top: 10px; opacity: 0.8;">
+                        Обновлено: ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                </div>
+
+                <!-- Финансовое здоровье -->
+                <div class="card">
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span>${currentUser.financial_health} / 100</span>
+                            <span>Финансовое здоровье</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${currentUser.financial_health}%"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; color: #666; font-size: 14px;">
+                            ${getFinancialHealthStatus(currentUser.financial_health)}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Доходы</div>
+                        <div class="stat-value">${formatCurrency(currentUser.monthly_income)}</div>
+                        <div style="font-size: 12px; color: #4caf50;">12 операций</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Расходы</div>
+                        <div class="stat-value">${formatCurrency(currentUser.monthly_expenses)}</div>
+                        <div style="font-size: 12px; color: #f44336;">19 операций</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Сбережения</div>
+                        <div class="stat-value">${currentUser.savings_percent}%</div>
+                        <div style="font-size: 12px; color: #2196f3;">от доходов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Инвестиции</div>
+                        <div class="stat-value">${formatCurrency(currentUser.investments_total)}</div>
+                        <div style="font-size: 12px; color: #ff9800;">3 актива</div>
+                    </div>
+                </div>
+
+                <!-- Структура расходов -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="font-size: 18px;">Структура расходов</h3>
+                        <span style="color: #667eea; font-size: 14px; cursor: pointer;">Подробнее →</span>
+                    </div>
+                    <div class="chart-container" id="expenseChart"></div>
+                    <div class="chart-legend" id="expenseLegend"></div>
+                </div>
+
+                <!-- Персональные советы -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="font-size: 18px;">Персональные советы</h3>
+                        <span style="color: #667eea; font-size: 14px; cursor: pointer;">Еще →</span>
+                    </div>
+                    <div class="advice-list">
+                        <div class="advice-item">
+                            <div class="advice-icon">🟠</div>
+                            <div class="advice-text">Попробуйте сократить расходы на развлечения на 20%</div>
+                        </div>
+                        <div class="advice-item">
+                            <div class="advice-icon">🔴</div>
+                            <div class="advice-text">Откладывайте 20% от дохода каждый месяц</div>
+                        </div>
+                        <div class="advice-item">
+                            <div class="advice-icon">✅</div>
+                            <div class="advice-text">Рассмотрите возможность инвестирования в акции ЛУКОЙЛ</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // Рисуем диаграмму расходов
+            renderExpenseChart();
+        }
+
+        // Рендер транзакций
+        function renderTransactions() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('transactions');
+            
+            // Фильтры
+            const filterHtml = `
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterTransactions('all')">Все</button>
+                    <button class="filter-btn" onclick="filterTransactions('income')">Доходы</button>
+                    <button class="filter-btn" onclick="filterTransactions('expense')">Расходы</button>
+                    <select class="form-select" style="flex: 1;" onchange="filterByCategory(this.value)">
+                        <option value="all">Все категории</option>
+                        <option value="зарплата">Зарплата</option>
+                        <option value="еда">Еда</option>
+                        <option value="транспорт">Транспорт</option>
+                        <option value="жилье">Жилье</option>
+                        <option value="развлечения">Развлечения</option>
+                    </select>
+                </div>
+            `;
+            
+            // Список транзакций
+            let transactionsHtml = '';
+            
+            if (currentUser.transactions && currentUser.transactions.length > 0) {
+                currentUser.transactions.forEach(transaction => {
+                    const isIncome = transaction.type === 'income';
+                    const icon = isIncome ? '➕' : '➖';
+                    const amountClass = isIncome ? 'positive' : 'negative';
+                    
+                    transactionsHtml += `
+                        <div class="transaction-item" data-id="${transaction.id}">
+                            <div class="transaction-icon ${transaction.type}">${icon}</div>
+                            <div class="transaction-details">
+                                <div class="transaction-category">${transaction.category}</div>
+                                <div class="transaction-description">${transaction.description}</div>
+                                <div class="transaction-date">${transaction.date}</div>
+                            </div>
+                            <div class="transaction-amount ${amountClass}">
+                                ${isIncome ? '+' : '-'}${formatCurrency(transaction.amount)}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                transactionsHtml = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💸</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">Нет операций</div>
+                        <div style="color: #999; margin-bottom: 20px;">Добавьте свою первую транзакцию</div>
+                        <button class="btn btn-small" onclick="openModal('transactionModal')">
+                            ➕ Добавить транзакцию
+                        </button>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = `
+                ${filterHtml}
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 18px;">История операций</h3>
+                    <button class="btn btn-small" onclick="openModal('transactionModal')">
+                        ➕ Добавить
+                    </button>
+                </div>
+                
+                <div class="transaction-list">
+                    ${transactionsHtml}
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; color: #999; font-size: 14px;">
+                    Всего операций: ${currentUser.transactions ? currentUser.transactions.length : 0}
+                </div>
+            `;
+        }
+
+        // Рендер целей
+        function renderGoals() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('goals');
+            
+            // Активные цели
+            let activeGoalsHtml = '';
+            let achievedGoalsHtml = '';
+            
+            if (currentUser.goals && currentUser.goals.length > 0) {
+                currentUser.goals.forEach(goal => {
+                    const isAchieved = goal.progress >= 100;
+                    
+                    const goalHtml = `
+                        <div class="card" style="border-left: 4px solid ${getGoalColor(goal.category)};">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div>
+                                    <h4 style="font-size: 16px; margin-bottom: 5px;">${goal.name}</h4>
+                                    <div style="font-size: 14px; color: #666;">${getCategoryIcon(goal.category)} ${goal.category}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 24px; font-weight: 700; color: #333;">${goal.progress}%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-bar" style="margin: 15px 0;">
+                                <div class="progress-fill" style="width: ${Math.min(goal.progress, 100)}%; background: ${getGoalColor(goal.category)};"></div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: #666;">
+                                <div>${formatCurrency(goal.current)} / ${formatCurrency(goal.target)}</div>
+                                <div>${goal.days_left} дн. осталось</div>
+                            </div>
+                            
+                            ${!isAchieved ? `
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                                <div style="font-size: 14px; color: #666;">Ежедневно: ${formatCurrency(goal.daily)}</div>
+                                <div style="font-size: 12px; color: #999;">Срок: ${formatDate(goal.deadline)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    if (isAchieved) {
+                        achievedGoalsHtml += goalHtml;
+                    } else {
+                        activeGoalsHtml += goalHtml;
+                    }
+                });
+            }
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <button class="btn" onclick="openModal('goalModal')">
+                        🎯 + Новая цель
+                    </button>
+                </div>
+                
+                ${activeGoalsHtml ? `
+                    <h3 style="font-size: 18px; margin-bottom: 15px;">Активные цели</h3>
+                    ${activeGoalsHtml}
+                ` : ''}
+                
+                ${achievedGoalsHtml ? `
+                    <h3 style="font-size: 18px; margin: 25px 0 15px;">Достигнутые цели</h3>
+                    ${achievedGoalsHtml}
+                ` : ''}
+                
+                ${!activeGoalsHtml && !achievedGoalsHtml ? `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">Нет финансовых целей</div>
+                        <div style="color: #999; margin-bottom: 20px;">Создайте свою первую финансовую цель</div>
+                        <button class="btn" onclick="openModal('goalModal')">
+                            🎯 Создать цель
+                        </button>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Рендер инвестиций
+        function renderInvestments() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('investments');
+            
+            // Портфель инвестиций
+            let investmentsHtml = '';
+            let totalValue = 0;
+            let totalInvested = 0;
+            
+            if (currentUser.investments && currentUser.investments.length > 0) {
+                currentUser.investments.forEach(investment => {
+                    totalValue += investment.amount;
+                    totalInvested += investment.invested;
+                    
+                    const profitClass = investment.profit >= 0 ? 'positive' : 'negative';
+                    const profitSign = investment.profit >= 0 ? '+' : '';
+                    
+                    investmentsHtml += `
+                        <div class="card investment-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                <div>
+                                    <h4 style="font-size: 16px; margin-bottom: 5px;">${investment.name}</h4>
+                                    <div style="font-size: 14px; color: #666;">${investment.type}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #333;">${formatCurrency(investment.amount)}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">
+                                ${investment.count}
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;">
+                                <div>Инвестировано: ${formatCurrency(investment.invested)}</div>
+                                <div class="investment-profit ${profitClass}">
+                                    ${profitSign}${formatCurrency(investment.profit)} (${profitSign}${investment.profit_percent}%)
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
+                                Куплено: ${formatDate(investment.buy_date)}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Общая статистика
+            const totalProfit = totalValue - totalInvested;
+            const totalProfitPercent = totalInvested > 0 ? (totalProfit / totalInvested * 100).toFixed(1) : 0;
+            const profitClass = totalProfit >= 0 ? 'positive' : 'negative';
+            const profitSign = totalProfit >= 0 ? '+' : '';
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <button class="btn" onclick="openModal('investmentModal')">
+                        📈 + Новая инвестиция
+                    </button>
+                </div>
+                
+                <!-- Общая статистика -->
+                <div class="card">
+                    <h3 style="font-size: 18px; margin-bottom: 15px;">Портфель инвестиций</h3>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 14px; color: #666;">Общая стоимость</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #333;">${formatCurrency(totalValue)}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; color: #666;">Общая прибыль</div>
+                            <div style="font-size: 20px; font-weight: 700;" class="${profitClass}">
+                                ${profitSign}${formatCurrency(totalProfit)} (${profitSign}${totalProfitPercent}%)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 14px; color: #666; text-align: center; padding-top: 15px; border-top: 1px solid #eee;">
+                        ${currentUser.investments ? currentUser.investments.length : 0} активов в портфеле
+                    </div>
+                </div>
+                
+                <!-- Список инвестиций -->
+                ${investmentsHtml ? `
+                    <h3 style="font-size: 18px; margin: 25px 0 15px;">Ваши инвестиции</h3>
+                    ${investmentsHtml}
+                ` : `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📈</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">Нет инвестиций</div>
+                        <div style="color: #999; margin-bottom: 20px;">Добавьте свою первую инвестицию</div>
+                    </div>
+                `}
+            `;
+        }
+
+        // Рендер профиля
+        function renderProfile() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('profile');
+            
+            container.innerHTML = `
+                <!-- Информация профиля -->
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea, #764ba2); 
+                                border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; 
+                                font-size: 32px; color: white; margin-bottom: 15px;">
+                            ${currentUser.first_name ? currentUser.first_name[0].toUpperCase() : 'U'}
+                        </div>
+                        <h3 style="font-size: 20px; margin-bottom: 5px;">${currentUser.first_name || 'Пользователь'}</h3>
+                        <div style="color: #666; font-size: 14px;">IT-специалист</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8f9ff; border-radius: 10px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Основной доход</div>
+                            <div style="font-size: 18px; font-weight: 700; color: #333;">${formatCurrency(currentUser.monthly_income)}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Текущий баланс</div>
+                            <div style="font-size: 18px; font-weight: 700; color: #333;">${formatCurrency(currentUser.balance)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Главная финансовая цель -->
+                <div class="card">
+                    <h3 style="font-size: 18px; margin-bottom: 15px;">Главная финансовая цель</h3>
+                    <div style="padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #4caf50;">
+                        <div style="font-size: 16px; font-weight: 500; color: #333;">🏠 ${currentUser.main_goal}</div>
+                    </div>
+                </div>
+                
+                <!-- Настройки сбережений -->
+                <div class="card">
+                    <h3 style="font-size: 18px; margin-bottom: 15px;">Настройки сбережений</h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Цель по сбережениям:</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #333;">${formatCurrency(currentUser.savings_goal)}/мес</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Доля инвестиций:</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${currentUser.investment_percent}%; background: #ff9800;"></div>
+                        </div>
+                        <div style="text-align: right; margin-top: 5px; font-size: 16px; font-weight: 700; color: #333;">
+                            ${currentUser.investment_percent}%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Реферальная система -->
+                <div class="referral-card">
+                    <h3 style="font-size: 18px; margin-bottom: 10px;">🎁 Пригласите друга</h3>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+                        Получите скидку 10% за каждого приглашенного друга!
+                    </p>
+                    
+                    <div class="referral-link" id="referralLink">
+                        Загрузка...
+                    </div>
+                    
+                    <button class="copy-btn" onclick="copyReferralLink()">
+                        📋 Скопировать ссылку
+                    </button>
+                </div>
+                
+                <!-- Экспорт данных -->
+                <div class="card">
+                    <h3 style="font-size: 18px; margin-bottom: 15px;">Экспорт данных</h3>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-small" style="flex: 1;" onclick="exportData('csv')">
+                            📊 Экспорт в CSV
+                        </button>
+                        <button class="btn btn-small" style="flex: 1;" onclick="exportData('json')">
+                            📁 Экспорт в JSON
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="createReport()">
+                        📄 Создать отчет
+                    </button>
+                </div>
+                
+                <!-- Информация о подписке -->
+                <div style="text-align: center; color: #999; font-size: 14px; margin-top: 30px; padding: 20px;">
+                    <div>📅 Участник с ${formatDate(currentUser.join_date)}</div>
+                    <div style="margin-top: 10px;">@FinancialLead_bot</div>
+                </div>
+            `;
+            
+            // Загружаем реферальную ссылку
+            loadReferralLink();
+        }
+
+        // Инициализация форм
+        function initForms() {
+            // Форма транзакции
+            document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    user_id: currentUser.user_id,
+                    type: document.getElementById('transactionType').value,
+                    category: document.getElementById('transactionCategory').value,
+                    amount: parseFloat(document.getElementById('transactionAmount').value),
+                    description: document.getElementById('transactionDescription').value,
+                    date: new Date().toLocaleString('ru-RU', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                };
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/update_transaction`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Обновляем данные пользователя
+                        await loadUserData(currentUser.user_id);
+                        
+                        // Закрываем модальное окно
+                        closeModal('transactionModal');
+                        
+                        // Показываем уведомление
+                        showNotification('Транзакция успешно добавлена!', 'success');
+                        
+                        // Обновляем текущую вкладку
+                        if (currentTab === 'transactions') {
+                            renderTransactions();
+                        } else if (currentTab === 'dashboard') {
+                            renderDashboard();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('Ошибка при добавлении транзакции', 'error');
+                    console.error(error);
                 }
             });
-        }
-        
-        // Функции модальных окон
-        function showTransactionModal(type) {
-            tg.showAlert(`Добавление ${type === 'income' ? 'дохода' : 'расхода'} будет в следующем обновлении`);
-        }
-        
-        function showGoalModal() {
-            tg.showAlert('Создание новой цели будет в следующем обновлении');
-        }
-        
-        function showInvestmentModal() {
-            tg.showAlert('Добавление инвестиции будет в следующем обновлении');
-        }
-        
-        // Функции профиля
-        function exportData() {
-            tg.showAlert('Экспорт данных в формате CSV');
-        }
-        
-        function generateReport() {
-            tg.showAlert('Создание PDF отчета');
-        }
-        
-        function inviteFriend() {
-            const referralLink = `https://t.me/${tg.initDataUnsafe?.user?.username || 'your_bot'}?start=ref_${tg.initDataUnsafe?.user?.id || '123'}`;
-            tg.showAlert(`Пригласите друга по ссылке: ${referralLink}`);
-        }
-        
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            // Устанавливаем текущую дату
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('ru-RU', options);
             
-            // Инициализируем график
-            initChart();
-        });
+            // Форма цели
+            document.getElementById('goalForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    user_id: currentUser.user_id,
+                    name: document.getElementById('goalName').value,
+                    category: document.getElementById('goalCategory').value,
+                    current: parseFloat(document.getElementById('goalCurrent').value),
+                    target: parseFloat(document.getElementById('goalTarget').value),
+                    deadline: document.getElementById('goalDeadline').value
+                };
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/update_goal`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await loadUserData(currentUser.user_id);
+                        closeModal('goalModal');
+                        showNotification('Цель успешно создана!', 'success');
+                        
+                        if (currentTab === 'goals') {
+                            renderGoals();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('Ошибка при создании цели', 'error');
+                    console.error(error);
+                }
+            });
+            
+            // Форма инвестиции
+            document.getElementById('investmentForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    user_id: currentUser.user_id,
+                    name: document.getElementById('investmentName').value,
+                    type: document.getElementById('investmentType').value,
+                    amount: parseFloat(document.getElementById('investmentAmount').value),
+                    count: document.getElementById('investmentCount').value,
+                    invested: parseFloat(document.getElementById('investmentInvested').value),
+                    buy_date: document.getElementById('investmentBuyDate').value
+                };
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/update_investment`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await loadUserData(currentUser.user_id);
+                        closeModal('investmentModal');
+                        showNotification('Инвестиция успешно добавлена!', 'success');
+                        
+                        if (currentTab === 'investments') {
+                            renderInvestments();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('Ошибка при добавлении инвестиции', 'error');
+                    console.error(error);
+                }
+            });
+            
+            // Устанавливаем дефолтные значения дат
+            document.getElementById('goalDeadline').valueAsDate = new Date(new Date().setMonth(new Date().getMonth() + 6));
+            document.getElementById('investmentBuyDate').valueAsDate = new Date();
+        }
+
+        // Вспомогательные функции
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ru-RU', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount) + ' ₽';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function getFinancialHealthStatus(score) {
+            if (score >= 80) return 'Отличное состояние 🎯';
+            if (score >= 60) return 'Хорошее состояние 👍';
+            if (score >= 40) return 'Среднее состояние ⚠️';
+            return 'Требует внимания ❗';
+        }
+
+        function getGoalColor(category) {
+            const colors = {
+                'техника': '#2196f3',
+                'путешествие': '#ff9800',
+                'автомобиль': '#f44336',
+                'недвижимость': '#4caf50',
+                'образование': '#9c27b0',
+                'другое': '#795548'
+            };
+            return colors[category] || '#667eea';
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'техника': '💻',
+                'путешествие': '✈️',
+                'автомобиль': '🚗',
+                'недвижимость': '🏠',
+                'образование': '📚',
+                'еда': '🍎',
+                'транспорт': '🚗',
+                'жилье': '🏠',
+                'развлечения': '🎮',
+                'здоровье': '🏥',
+                'зарплата': '💼'
+            };
+            return icons[category] || '📦';
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            
+            // Заполняем user_id в формах
+            if (currentUser) {
+                document.getElementById('user_id').value = currentUser.user_id;
+                document.getElementById('goalUserId').value = currentUser.user_id;
+                document.getElementById('investmentUserId').value = currentUser.user_id;
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // Сбрасываем формы
+            if (modalId === 'transactionModal') {
+                document.getElementById('transactionForm').reset();
+            } else if (modalId === 'goalModal') {
+                document.getElementById('goalForm').reset();
+                document.getElementById('goalDeadline').valueAsDate = new Date(new Date().setMonth(new Date().getMonth() + 6));
+            } else if (modalId === 'investmentModal') {
+                document.getElementById('investmentForm').reset();
+                document.getElementById('investmentBuyDate').valueAsDate = new Date();
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            
+            // Устанавливаем цвет в зависимости от типа
+            const colors = {
+                'success': '#4caf50',
+                'error': '#f44336',
+                'warning': '#ff9800',
+                'info': '#2196f3'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            notification.style.display = 'block';
+            
+            // Автоматически скрываем через 3 секунды
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function showLoading() {
+            const container = document.querySelector('.app-container');
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Загрузка данных...</div>
+                </div>
+            `;
+        }
+
+        function hideLoading() {
+            // Контент будет отрисован после загрузки данных
+        }
+
+        async function loadReferralLink() {
+            try {
+                const response = await fetch(`${API_URL}/api/get_referral_link?user_id=${currentUser.user_id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('referralLink').textContent = data.referral_link;
+                }
+            } catch (error) {
+                document.getElementById('referralLink').textContent = 'https://t.me/FinancialLead_bot?start=ref_' + currentUser.user_id;
+            }
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                showNotification('Ссылка скопирована в буфер обмена!', 'success');
+            });
+        }
+
+        async function exportData(format) {
+            try {
+                const url = `${API_URL}/api/export_data?user_id=${currentUser.user_id}&format=${format}`;
+                
+                if (format === 'csv') {
+                    // Для CSV создаем временную ссылку
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `finance_data_${currentUser.user_id}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl);
+                    
+                    showNotification('Данные экспортированы в CSV', 'success');
+                } else {
+                    // Для JSON открываем в новой вкладке
+                    window.open(url, '_blank');
+                    showNotification('Данные экспортированы в JSON', 'success');
+                }
+            } catch (error) {
+                showNotification('Ошибка при экспорте данных', 'error');
+                console.error(error);
+            }
+        }
+
+        function createReport() {
+            showNotification('Функция создания отчета в разработке', 'info');
+        }
+
+        function filterTransactions(type) {
+            // Обновляем активные кнопки
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // В реальном приложении здесь будет фильтрация
+            showNotification(`Показаны ${type === 'all' ? 'все' : type === 'income' ? 'доходы' : 'расходы'}`, 'info');
+        }
+
+        function filterByCategory(category) {
+            if (category === 'all') return;
+            showNotification(`Фильтр по категории: ${category}`, 'info');
+        }
+
+        function renderExpenseChart() {
+            const expenses = {
+                'еда': 20,
+                'жилье': 25,
+                'транспорт': 15,
+                'развлечения': 10,
+                'образование': 15,
+                'здоровье': 15
+            };
+            
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+            let colorIndex = 0;
+            
+            const legendContainer = document.getElementById('expenseLegend');
+            legendContainer.innerHTML = '';
+            
+            for (const [category, percent] of Object.entries(expenses)) {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${colors[colorIndex]}"></div>
+                    <span>${category} - ${percent}%</span>
+                `;
+                legendContainer.appendChild(legendItem);
+                colorIndex = (colorIndex + 1) % colors.length;
+            }
+            
+            // Простая визуализация диаграммы с помощью CSS
+            const chartContainer = document.getElementById('expenseChart');
+            chartContainer.innerHTML = `
+                <div style="display: flex; height: 100%; align-items: flex-end; gap: 5px;">
+                    ${Object.entries(expenses).map(([category, percent], index) => `
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 80%; background: ${colors[index]}; 
+                                  height: ${percent * 1.5}px; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 10px; margin-top: 5px; text-align: center;">${category}</div>
+                            <div style="font-size: 12px; font-weight: bold;">${percent}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Обработчики событий для Telegram Web App
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            
+            // Устанавливаем тему Telegram
+            const theme = Telegram.WebApp.colorScheme;
+            if (theme === 'dark') {
+                document.body.style.background = '#1a1a1a';
+                document.body.style.color = '#ffffff';
+                document.querySelector('.app-container').style.background = '#1a1a1a';
+                document.querySelectorAll('.card').forEach(card => {
+                    card.style.background = '#2a2a2a';
+                    card.style.borderColor = '#3a3a3a';
+                });
+            }
+        }
     </script>
 </body>
 </html>
