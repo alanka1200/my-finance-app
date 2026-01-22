@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Финансовый Трекер | Telegram Web App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,22 +29,33 @@
             padding: 0;
             box-sizing: border-box;
             transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            height: 100vh;
+            height: -webkit-fill-available;
+            scroll-behavior: smooth;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            padding: 16px;
+            padding: 16px 16px 80px;
             max-width: 100%;
             overflow-x: hidden;
             line-height: 1.6;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            touch-action: pan-y;
         }
         
         .container {
             max-width: 500px;
             margin: 0 auto;
             animation: fadeIn 0.5s ease;
+            padding-top: 60px;
         }
         
         @keyframes fadeIn {
@@ -57,10 +68,19 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-color);
+            z-index: 999;
+            padding: 10px 16px;
+            max-width: 500px;
+            margin: 0 auto;
         }
         
         .header h1 {
-            font-size: 22px;
+            font-size: 20px;
             color: var(--primary-color);
             margin-bottom: 5px;
             display: flex;
@@ -69,13 +89,18 @@
             gap: 10px;
         }
         
+        #currentDate {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666);
+        }
+        
         .balance-card {
-            background: linear-gradient(135deg, var(--primary-color), #2481cc);
+            background: linear-gradient(135deg, #2d8bc8, #1a6da4);
             color: white;
             padding: 20px;
             border-radius: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
             position: relative;
             overflow: hidden;
         }
@@ -94,9 +119,17 @@
         
         .balance-amount {
             font-size: 42px;
-            font-weight: bold;
+            font-weight: 900;
             margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            letter-spacing: 0.5px;
+        }
+        
+        #balanceChange {
+            font-size: 16px;
+            font-weight: 600;
+            opacity: 0.95;
+            margin-top: 5px;
         }
         
         .stats-grid {
@@ -114,6 +147,10 @@
             border: 1px solid var(--border-color);
             cursor: pointer;
             transition: transform 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .stat-card:hover {
@@ -139,7 +176,7 @@
         
         .quick-actions {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin: 20px 0;
         }
@@ -149,15 +186,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 15px;
+            padding: 12px 8px;
             background: var(--card-bg);
             border: none;
             border-radius: 15px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-color);
             border: 2px solid transparent;
+            min-height: 70px;
         }
         
         .action-btn:hover {
@@ -166,8 +204,8 @@
         }
         
         .action-btn i {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 22px;
+            margin-bottom: 5px;
         }
         
         .action-btn.income i { color: var(--income-color); }
@@ -210,25 +248,17 @@
             position: relative;
         }
         
-        .chart-tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
+        .chartjs-legend .legend-item {
+            color: var(--text-color) !important;
+            font-weight: 600 !important;
         }
         
-        .chart-tab {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            font-weight: 500;
-        }
-        
-        .chart-tab.active {
-            border-bottom-color: var(--primary-color);
-            color: var(--primary-color);
-            font-weight: 600;
+        .chartjs-tooltip {
+            background: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
         }
         
         .transaction-item {
@@ -243,6 +273,7 @@
             border-right: 1px solid var(--border-color);
             border-top: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
+            position: relative;
         }
         
         .transaction-income { 
@@ -310,6 +341,39 @@
             color: var(--expense-color);
         }
         
+        .transaction-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .transaction-item:hover .transaction-actions {
+            opacity: 1;
+        }
+        
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+        
+        .action-icon:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
         .goal-item {
             background: var(--bg-color);
             padding: 15px;
@@ -356,6 +420,29 @@
             color: var(--tg-theme-hint-color, #666);
         }
         
+        .goal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .goal-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            flex: 1;
+            text-align: center;
+        }
+        
+        .goal-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -364,20 +451,24 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            z-index: 2000;
             animation: fadeIn 0.3s ease;
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .modal-content {
             background: var(--bg-color);
-            margin: 5% auto;
+            margin: 10% auto;
             padding: 25px;
             border-radius: 20px;
-            width: 90%;
+            width: 100%;
             max-width: 400px;
             max-height: 80vh;
             overflow-y: auto;
             animation: slideUp 0.3s ease;
+            position: relative;
         }
         
         @keyframes slideUp {
@@ -405,6 +496,7 @@
             background: var(--card-bg);
             color: var(--text-color);
             transition: border-color 0.3s;
+            -webkit-appearance: none;
         }
         
         .form-input:focus {
@@ -412,57 +504,50 @@
             border-color: var(--primary-color);
         }
         
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+        .form-input.formatted {
+            font-family: monospace;
+            letter-spacing: 1px;
         }
         
-        .category-btn {
-            padding: 12px;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 40px;
         }
-        
-        .category-btn:hover {
-            transform: scale(1.05);
-        }
-        
-        .category-btn.active {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
-            font-weight: 600;
-        }
-        
-        .category-btn.income { border-left: 4px solid var(--income-color); }
-        .category-btn.expense { border-left: 4px solid var(--expense-color); }
         
         .nav-tabs {
             display: flex;
             border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-            position: sticky;
-            top: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: var(--bg-color);
-            z-index: 100;
-            padding-top: 10px;
+            z-index: 1000;
+            padding: 10px 0 5px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            justify-content: space-around;
         }
         
         .nav-tab {
             flex: 1;
-            padding: 12px;
+            padding: 8px 5px;
             text-align: center;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             font-weight: 500;
             color: var(--tg-theme-hint-color, #666);
+            font-size: 12px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
         }
         
         .nav-tab.active {
@@ -473,13 +558,14 @@
         
         .nav-tab i {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             font-size: 20px;
         }
         
         .tab-content {
             display: none;
             animation: fadeIn 0.5s ease;
+            padding-bottom: 80px;
         }
         
         .tab-content.active {
@@ -494,11 +580,16 @@
             height: 50px;
             animation: spin 1s linear infinite;
             margin: 40px auto;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
         }
         
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
         
         .empty-state {
@@ -596,6 +687,21 @@
             margin-bottom: 10px;
             border: 1px solid var(--border-color);
             border-left: 4px solid var(--investment-color);
+            position: relative;
+        }
+        
+        .investment-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .investment-card:hover .investment-actions {
+            opacity: 1;
         }
         
         .investment-performance {
@@ -634,6 +740,7 @@
             margin: 8px 0;
             transition: all 0.3s;
             text-align: center;
+            min-height: 50px;
         }
         
         .btn-primary {
@@ -666,6 +773,11 @@
             color: white;
         }
         
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
         .hidden { display: none !important; }
         
         .pulse {
@@ -694,48 +806,200 @@
             font-weight: bold;
         }
         
+        .goal-allocation-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg-color);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-indicator.success {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4CAF50;
+        }
+        
+        .status-indicator.warning {
+            background: rgba(255, 152, 0, 0.15);
+            color: #FF9800;
+        }
+        
+        .status-indicator.error {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+        }
+        
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-group .form-input {
+            flex: 1;
+        }
+        
+        .input-group .unit {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+            min-width: 40px;
+        }
+        
+        .formatted-input-container {
+            position: relative;
+        }
+        
+        .formatted-input-container .form-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+            padding-left: 40px;
+        }
+        
+        .currency-symbol {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: var(--text-color);
+            font-family: monospace;
+        }
+        
+        .referral-link {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .referral-link input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            margin-top: 10px;
+            font-family: monospace;
+            cursor: copy;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 6px 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .report-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .report-option {
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+        }
+        
+        .report-option:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .report-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
         @media (max-width: 480px) {
-            .container { padding: 0 10px; }
-            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { padding: 0 10px; padding-top: 60px; }
             .balance-amount { font-size: 36px; }
             .quick-actions { grid-template-columns: repeat(4, 1fr); }
-            .action-btn span { display: none; }
-            .action-btn i { font-size: 20px; margin-bottom: 0; }
+            .action-btn span { display: block; font-size: 11px; }
+            .action-btn i { font-size: 20px; margin-bottom: 5px; }
+            .stats-grid { gap: 8px; }
+            .stat-card { padding: 12px; min-height: 90px; }
+            .stat-value { font-size: 20px; }
+            .nav-tab { padding: 6px 3px; font-size: 11px; }
+            .nav-tab i { font-size: 18px; }
+            .modal-content { margin: 20px auto; padding: 20px; max-height: 85vh; }
+            .section { padding: 15px; }
+            .chart-container { height: 220px; }
+            .report-options { grid-template-columns: 1fr; }
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tab-content.active {
+            animation: fadeInUp 0.3s ease;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1><i class="fas fa-chart-line pulse"></i> Финансовый Трекер</h1>
+        <div id="currentDate">Загрузка...</div>
+    </div>
+    
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-chart-line pulse"></i> Финансовый Трекер</h1>
-            <div id="currentDate">Загрузка...</div>
-        </div>
-        
-        <div class="nav-tabs">
-            <div class="nav-tab active" onclick="switchTab('dashboard')">
-                <i class="fas fa-home"></i>
-                <span>Дашборд</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('transactions')">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Транзакции</span>
-                <div id="transactionsBadge" class="notification-badge hidden">0</div>
-            </div>
-            <div class="nav-tab" onclick="switchTab('goals')">
-                <i class="fas fa-bullseye"></i>
-                <span>Цели</span>
-                <div id="goalsBadge" class="notification-badge hidden">0</div>
-            </div>
-            <div class="nav-tab" onclick="switchTab('investments')">
-                <i class="fas fa-chart-line"></i>
-                <span>Инвестиции</span>
-            </div>
-            <div class="nav-tab" onclick="switchTab('profile')">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </div>
-        </div>
-        
         <!-- Дашборд -->
         <div id="dashboardTab" class="tab-content active">
             <div class="balance-card">
@@ -958,20 +1222,88 @@
             
             <div class="section">
                 <div class="section-title">
+                    <span><i class="fas fa-users"></i> Реферальная система</span>
+                </div>
+                <div id="referralSection">
+                    <div class="referral-link">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Ваша реферальная ссылка:</div>
+                        <input type="text" id="referralLink" readonly value="Загрузка...">
+                        <button class="copy-btn" onclick="copyReferralLink()">Копировать</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; color: #666;">Приглашено</div>
+                            <div style="font-weight: 600; font-size: 18px;" id="referralCount">0</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; color: #666;">Бонусы</div>
+                            <div style="font-weight: 600; font-size: 18px;" id="referralBonus">0 ₽</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span><i class="fas fa-file-alt"></i> Экспорт данных</span>
+                </div>
+                <div class="report-options">
+                    <div class="report-option" onclick="generateReport('monthly')">
+                        <i class="fas fa-calendar"></i>
+                        <div>Месячный отчет</div>
+                    </div>
+                    <div class="report-option" onclick="generateReport('yearly')">
+                        <i class="fas fa-chart-bar"></i>
+                        <div>Годовой отчет</div>
+                    </div>
+                    <div class="report-option" onclick="exportToCSV()">
+                        <i class="fas fa-file-csv"></i>
+                        <div>CSV экспорт</div>
+                    </div>
+                    <div class="report-option" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        <div>Excel экспорт</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
                     <span><i class="fas fa-cog"></i> Настройки</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn" onclick="exportData()">
-                        <i class="fas fa-download"></i> Экспорт данных
-                    </button>
-                    <button class="btn" onclick="generateReport()">
-                        <i class="fas fa-file-pdf"></i> Создать отчет
-                    </button>
                     <button class="btn btn-primary" onclick="inviteFriend()">
                         <i class="fas fa-user-plus"></i> Пригласить друга
                     </button>
+                    <button class="btn" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i> Очистить все данные
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Нижняя навигация -->
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('dashboard')">
+            <i class="fas fa-home"></i>
+            <span>Главная</span>
+        </div>
+        <div class="nav-tab" onclick="switchTab('transactions')">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Операции</span>
+        </div>
+        <div class="nav-tab" onclick="switchTab('goals')">
+            <i class="fas fa-bullseye"></i>
+            <span>Цели</span>
+        </div>
+        <div class="nav-tab" onclick="switchTab('investments')">
+            <i class="fas fa-chart-line"></i>
+            <span>Инвестиции</span>
+        </div>
+        <div class="nav-tab" onclick="switchTab('profile')">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
         </div>
     </div>
     
@@ -982,12 +1314,21 @@
             
             <div class="form-group">
                 <label class="form-label">Сумма (₽)</label>
-                <input type="number" id="amountInput" class="form-input" placeholder="1000" min="1" step="0.01">
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="amountInput" class="form-input formatted" placeholder="1 000" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Категория</label>
-                <div class="category-grid" id="categoriesContainer"></div>
+                <select id="categorySelect" class="form-input" onchange="handleCategorySelect()">
+                    <option value="">Выберите категорию</option>
+                </select>
+                <div id="customCategoryGroup" style="display: none; margin-top: 10px;">
+                    <input type="text" id="customCategoryInput" class="form-input" placeholder="Введите свою категорию">
+                </div>
             </div>
             
             <div class="form-group">
@@ -1009,6 +1350,63 @@
         </div>
     </div>
     
+    <!-- Модалка редактирования транзакции -->
+    <div id="editTransactionModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-edit"></i> Редактировать транзакцию</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Сумма (₽)</label>
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="editAmountInput" class="form-input formatted" placeholder="1 000" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Категория</label>
+                <select id="editCategorySelect" class="form-input">
+                    <option value="">Выберите категорию</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Тип</label>
+                <select id="editTypeSelect" class="form-input">
+                    <option value="income">Доход</option>
+                    <option value="expense">Расход</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <input type="text" id="editDescriptionInput" class="form-input" placeholder="Описание">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Теги (через запятую)</label>
+                <input type="text" id="editTagsInput" class="form-input" placeholder="теги">
+            </div>
+            
+            <input type="hidden" id="editTransactionId">
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="saveEditedTransaction()" style="flex: 2;">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button class="btn btn-danger" onclick="deleteTransaction()" style="flex: 1;">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+            </div>
+            
+            <button class="btn" onclick="closeEditModal()" style="margin-top: 10px;">
+                <i class="fas fa-times"></i> Отмена
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модалка цели -->
     <div id="goalModal" class="modal">
         <div class="modal-content">
             <h2><i class="fas fa-bullseye"></i> Новая финансовая цель</h2>
@@ -1020,7 +1418,11 @@
             
             <div class="form-group">
                 <label class="form-label">Сумма цели (₽)</label>
-                <input type="number" id="goalAmount" class="form-input" placeholder="500000" min="1" step="0.01">
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="goalAmount" class="form-input formatted" placeholder="500 000" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
             </div>
             
             <div class="form-group">
@@ -1060,6 +1462,101 @@
         </div>
     </div>
     
+    <!-- Модалка редактирования цели -->
+    <div id="editGoalModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-edit"></i> Редактировать цель</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Название цели</label>
+                <input type="text" id="editGoalTitle" class="form-input" placeholder="Название цели">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Текущая сумма (₽)</label>
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="editGoalCurrentAmount" class="form-input formatted" placeholder="0" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Целевая сумма (₽)</label>
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="editGoalTargetAmount" class="form-input formatted" placeholder="500 000" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Срок достижения</label>
+                <input type="date" id="editGoalDeadline" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Категория</label>
+                <select id="editGoalCategory" class="form-input">
+                    <option value="накопления">Накопления</option>
+                    <option value="инвестиции">Инвестиции</option>
+                    <option value="путешествие">Путешествие</option>
+                    <option value="образование">Образование</option>
+                    <option value="жилье">Жилье</option>
+                    <option value="техника">Техника</option>
+                    <option value="автомобиль">Автомобиль</option>
+                    <option value="здоровье">Здоровье</option>
+                </select>
+            </div>
+            
+            <input type="hidden" id="editGoalId">
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-goal" onclick="saveEditedGoal()" style="flex: 2;">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button class="btn btn-danger" onclick="deleteGoal()" style="flex: 1;">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+            </div>
+            
+            <button class="btn" onclick="closeEditGoalModal()" style="margin-top: 10px;">
+                <i class="fas fa-times"></i> Отмена
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модалка пополнения цели -->
+    <div id="addToGoalModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-plus-circle"></i> Пополнить цель</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Сумма пополнения (₽)</label>
+                <div class="formatted-input-container">
+                    <span class="currency-symbol">₽</span>
+                    <input type="text" id="addToGoalAmount" class="form-input formatted" placeholder="1 000" 
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Комментарий (необязательно)</label>
+                <input type="text" id="addToGoalComment" class="form-input" placeholder="Например: Зарплата январь">
+            </div>
+            
+            <input type="hidden" id="addToGoalId">
+            
+            <button class="btn btn-goal" onclick="processAddToGoal()">
+                <i class="fas fa-check"></i> Пополнить
+            </button>
+            <button class="btn" onclick="closeAddToGoalModal()" style="margin-top: 10px;">
+                <i class="fas fa-times"></i> Отмена
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модалка инвестиции -->
     <div id="investmentModal" class="modal">
         <div class="modal-content">
             <h2><i class="fas fa-chart-line"></i> Новая инвестиция</h2>
@@ -1081,13 +1578,32 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Сумма инвестиции (₽)</label>
-                <input type="number" id="investmentAmount" class="form-input" placeholder="50000" min="1" step="0.01">
+                <label class="form-label">Цена за единицу (₽)</label>
+                <div class="input-group">
+                    <div class="formatted-input-container" style="flex: 1;">
+                        <span class="currency-symbol">₽</span>
+                        <input type="text" id="investmentPrice" class="form-input formatted" placeholder="1 000" 
+                               oninput="formatCurrencyInput(this); calculateInvestmentTotal();" 
+                               onblur="validateCurrencyInput(this)">
+                    </div>
+                    <div class="unit">₽</div>
+                </div>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Количество (опционально)</label>
-                <input type="number" id="investmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001">
+                <label class="form-label">Количество</label>
+                <div class="input-group">
+                    <input type="number" id="investmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateInvestmentTotal()">
+                    <div class="unit">шт.</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Итоговая сумма (₽)</label>
+                <input type="text" id="investmentAmount" class="form-input formatted" placeholder="0" readonly style="background: var(--border-color);">
+                <div style="font-size: 12px; color: var(--tg-theme-hint-color); margin-top: 5px;">
+                    <i class="fas fa-calculator"></i> Рассчитывается автоматически
+                </div>
             </div>
             
             <button class="btn btn-investment" onclick="submitInvestment()">
@@ -1099,475 +1615,1809 @@
         </div>
     </div>
     
+    <!-- Модалка редактирования инвестиции -->
+    <div id="editInvestmentModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-edit"></i> Редактировать инвестицию</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Тип актива</label>
+                <select id="editInvestmentType" class="form-input">
+                    <option value="stock">Акции</option>
+                    <option value="crypto">Криптовалюта</option>
+                    <option value="bond">Облигации</option>
+                    <option value="real_estate">Недвижимость</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Название актива</label>
+                <input type="text" id="editInvestmentName" class="form-input" placeholder="Название актива">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Цена за единицу (₽)</label>
+                <div class="input-group">
+                    <div class="formatted-input-container" style="flex: 1;">
+                        <span class="currency-symbol">₽</span>
+                        <input type="text" id="editInvestmentPrice" class="form-input formatted" placeholder="1 000" 
+                               oninput="formatCurrencyInput(this); calculateEditInvestmentTotal();" 
+                               onblur="validateCurrencyInput(this)">
+                    </div>
+                    <div class="unit">₽</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Количество</label>
+                <div class="input-group">
+                    <input type="number" id="editInvestmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateEditInvestmentTotal()">
+                    <div class="unit">шт.</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Текущая цена (₽)</label>
+                <div class="input-group">
+                    <div class="formatted-input-container" style="flex: 1;">
+                        <span class="currency-symbol">₽</span>
+                        <input type="text" id="editInvestmentCurrentPrice" class="form-input formatted" placeholder="1 000" 
+                               oninput="formatCurrencyInput(this); calculateEditInvestmentProfit();" 
+                               onblur="validateCurrencyInput(this)">
+                    </div>
+                    <div class="unit">₽</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Итоговая сумма (₽)</label>
+                <input type="text" id="editInvestmentAmount" class="form-input formatted" placeholder="0" readonly style="background: var(--border-color);">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Текущая стоимость (₽)</label>
+                <input type="text" id="editInvestmentCurrentValue" class="form-input formatted" placeholder="0" readonly style="background: var(--border-color);">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Прибыль/убыток</label>
+                <input type="text" id="editInvestmentProfit" class="form-input formatted" placeholder="0" readonly style="background: var(--border-color);">
+            </div>
+            
+            <input type="hidden" id="editInvestmentId">
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-investment" onclick="saveEditedInvestment()" style="flex: 2;">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button class="btn btn-danger" onclick="deleteInvestment()" style="flex: 1;">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+            </div>
+            
+            <button class="btn" onclick="closeEditInvestmentModal()" style="margin-top: 10px;">
+                <i class="fas fa-times"></i> Отмена
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модалка распределения по целям -->
+    <div id="goalAllocationModal" class="modal"></div>
+    
     <!-- Загрузчик -->
     <div id="loader" class="loader hidden"></div>
     
     <script>
-    // Telegram Web App
-    let tg = window.Telegram.WebApp;
-    let userId = null;
-    let currentTransactionType = 'income';
-    let selectedCategory = '';
-    let charts = {};
-    let dashboardData = null;
-    
-    // Инициализация
-    tg.expand();
-    tg.ready();
-    tg.setHeaderColor('secondary_bg_color');
-    tg.setBackgroundColor('secondary_bg_color');
-    
-    // Получаем данные пользователя из Telegram
-    const initData = tg.initDataUnsafe;
-    if (initData.user) {
-        userId = initData.user.id;
-        document.title = `Финансовый Трекер | ${initData.user.first_name}`;
-    } else {
-        // Для отладки без Telegram - создаём тестового пользователя
-        userId = 'test_user_' + Date.now();
-        localStorage.setItem('telegram_user_id', userId);
-        localStorage.setItem('test_user_name', 'Тестовый Пользователь');
-    }
-    
-    // Инициализация данных пользователя в localStorage
-    initUserData();
-    
-    // Устанавливаем текущую дату
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    };
-    document.getElementById('currentDate').textContent = 
-        now.toLocaleDateString('ru-RU', options);
-    
-    // ====================== ФУНКЦИИ LOCALSTORAGE ======================
-    
-    function initUserData() {
-        const userDataKey = `finance_user_${userId}`;
+        // Telegram Web App
+        let tg = window.Telegram.WebApp;
+        let userId = null;
+        let currentTransactionType = 'income';
+        let selectedCategory = '';
+        let charts = {};
+        let dashboardData = null;
         
-        if (!localStorage.getItem(userDataKey)) {
-            // Инициализируем пустые данные для нового пользователя
-            const initialData = {
-                user: {
-                    user_id: userId,
-                    username: initData.user?.username || 'test_user',
-                    full_name: initData.user?.first_name || 'Тестовый Пользователь',
-                    registration_date: new Date().toISOString(),
-                    balance: 0,
-                    profession: '',
-                    main_income: 0,
-                    currency: '₽'
-                },
-                transactions: [],
-                goals: [],
-                investments: [],
-                categories: [
-                    // Доходы
-                    { user_id: userId, name: 'зарплата', type: 'income', color: '#4CAF50', icon: '💰' },
-                    { user_id: userId, name: 'подработка', type: 'income', color: '#2196F3', icon: '💼' },
-                    { user_id: userId, name: 'инвестиции', type: 'income', color: '#9C27B0', icon: '📈' },
-                    { user_id: userId, name: 'подарки', type: 'income', color: '#FF9800', icon: '🎁' },
-                    { user_id: userId, name: 'дивиденды', type: 'income', color: '#795548', icon: '💹' },
-                    { user_id: userId, name: 'аренда', type: 'income', color: '#607D8B', icon: '🏠' },
-                    
-                    // Расходы
-                    { user_id: userId, name: 'еда', type: 'expense', color: '#F44336', icon: '🍔' },
-                    { user_id: userId, name: 'транспорт', type: 'expense', color: '#3F51B5', icon: '🚗' },
-                    { user_id: userId, name: 'жилье', type: 'expense', color: '#795548', icon: '🏠' },
-                    { user_id: userId, name: 'развлечения', type: 'expense', color: '#E91E63', icon: '🎮' },
-                    { user_id: userId, name: 'образование', type: 'expense', color: '#009688', icon: '📚' },
-                    { user_id: userId, name: 'здоровье', type: 'expense', color: '#00BCD4', icon: '🏥' },
-                    { user_id: userId, name: 'одежда', type: 'expense', color: '#FF5722', icon: '👕' },
-                    { user_id: userId, name: 'техника', type: 'expense', color: '#9C27B0', icon: '💻' },
-                    { user_id: userId, name: 'путешествия', type: 'expense', color: '#8BC34A', icon: '✈️' },
-                    { user_id: userId, name: 'подарки', type: 'expense', color: '#FF9800', icon: '🎁' },
-                    { user_id: userId, name: 'инвестиции', type: 'expense', color: '#FFC107', icon: '📊' }
-                ]
+        // Инициализация
+        tg.expand();
+        tg.ready();
+        tg.setHeaderColor('secondary_bg_color');
+        tg.setBackgroundColor('secondary_bg_color');
+        
+        // Получаем данные пользователя из Telegram
+        const initData = tg.initDataUnsafe;
+        if (initData.user) {
+            userId = initData.user.id;
+            document.title = `Финансовый Трекер | ${initData.user.first_name}`;
+        } else {
+            userId = 'test_user_' + Date.now();
+            localStorage.setItem('telegram_user_id', userId);
+            localStorage.setItem('test_user_name', 'Тестовый Пользователь');
+        }
+        
+        // Инициализация данных пользователя в localStorage
+        initUserData();
+        
+        // Устанавливаем текущую дату
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        document.getElementById('currentDate').textContent = 
+            now.toLocaleDateString('ru-RU', options);
+        
+        // ====================== УТИЛИТЫ ФОРМАТИРОВАНИЯ ======================
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('ru-RU', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+        
+        function parseCurrency(value) {
+            if (!value) return 0;
+            return parseFloat(value.toString().replace(/\s/g, '').replace(',', '.'));
+        }
+        
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            
+            let num = parseInt(value, 10);
+            if (isNaN(num)) num = 0;
+            
+            input.value = formatCurrency(num);
+            
+            // Вызываем связанные расчеты
+            if (input.id === 'investmentPrice' || input.id === 'editInvestmentPrice' || 
+                input.id === 'editInvestmentCurrentPrice') {
+                calculateInvestmentTotal();
+            }
+        }
+        
+        function validateCurrencyInput(input) {
+            let value = parseCurrency(input.value);
+            if (value <= 0) {
+                input.value = '';
+            } else {
+                input.value = formatCurrency(value);
+            }
+        }
+        
+        // ====================== ФУНКЦИИ LOCALSTORAGE ======================
+        
+        function initUserData() {
+            const userDataKey = `finance_user_${userId}`;
+            
+            if (!localStorage.getItem(userDataKey)) {
+                const initialData = {
+                    user: {
+                        user_id: userId,
+                        username: initData.user?.username || 'test_user',
+                        full_name: initData.user?.first_name || 'Тестовый Пользователь',
+                        registration_date: new Date().toISOString(),
+                        balance: 0,
+                        profession: '',
+                        main_income: 0,
+                        currency: '₽',
+                        referral_code: generateReferralCode(),
+                        referred_by: null,
+                        referral_count: 0,
+                        referral_bonus: 0
+                    },
+                    transactions: [],
+                    goals: [],
+                    investments: [],
+                    categories: [
+                        { user_id: userId, name: 'зарплата', type: 'income', color: '#4CAF50', icon: '💰' },
+                        { user_id: userId, name: 'подработка', type: 'income', color: '#2196F3', icon: '💼' },
+                        { user_id: userId, name: 'инвестиции', type: 'income', color: '#9C27B0', icon: '📈' },
+                        { user_id: userId, name: 'подарки', type: 'income', color: '#FF9800', icon: '🎁' },
+                        { user_id: userId, name: 'дивиденды', type: 'income', color: '#795548', icon: '💹' },
+                        { user_id: userId, name: 'аренда', type: 'income', color: '#607D8B', icon: '🏠' },
+                        { user_id: userId, name: 'еда', type: 'expense', color: '#F44336', icon: '🍔' },
+                        { user_id: userId, name: 'транспорт', type: 'expense', color: '#3F51B5', icon: '🚗' },
+                        { user_id: userId, name: 'жилье', type: 'expense', color: '#795548', icon: '🏠' },
+                        { user_id: userId, name: 'развлечения', type: 'expense', color: '#E91E63', icon: '🎮' },
+                        { user_id: userId, name: 'образование', type: 'expense', color: '#009688', icon: '📚' },
+                        { user_id: userId, name: 'здоровье', type: 'expense', color: '#00BCD4', icon: '🏥' },
+                        { user_id: userId, name: 'одежда', type: 'expense', color: '#FF5722', icon: '👕' },
+                        { user_id: userId, name: 'техника', type: 'expense', color: '#9C27B0', icon: '💻' },
+                        { user_id: userId, name: 'путешествия', type: 'expense', color: '#8BC34A', icon: '✈️' },
+                        { user_id: userId, name: 'подарки', type: 'expense', color: '#FF9800', icon: '🎁' },
+                        { user_id: userId, name: 'инвестиции', type: 'expense', color: '#FFC107', icon: '📊' },
+                        { user_id: userId, name: 'другое', type: 'income', color: '#757575', icon: '📌' },
+                        { user_id: userId, name: 'другое', type: 'expense', color: '#757575', icon: '📌' }
+                    ]
+                };
+                
+                localStorage.setItem(userDataKey, JSON.stringify(initialData));
+            }
+            
+            // Обновляем реферальную ссылку
+            updateReferralLink();
+        }
+        
+        function getUserData() {
+            const userDataKey = `finance_user_${userId}`;
+            const data = JSON.parse(localStorage.getItem(userDataKey)) || {};
+            if (!data.transactions) data.transactions = [];
+            if (!data.goals) data.goals = [];
+            if (!data.investments) data.investments = [];
+            if (!data.user) data.user = { balance: 0 };
+            if (!data.categories) data.categories = [];
+            if (!data.user.referral_code) data.user.referral_code = generateReferralCode();
+            if (!data.user.referral_count) data.user.referral_count = 0;
+            if (!data.user.referral_bonus) data.user.referral_bonus = 0;
+            return data;
+        }
+        
+        function saveUserData(data) {
+            const userDataKey = `finance_user_${userId}`;
+            localStorage.setItem(userDataKey, JSON.stringify(data));
+        }
+        
+        function generateReferralCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
+        function updateReferralLink() {
+            const data = getUserData();
+            const referralLink = `https://t.me/your_bot_username?start=ref_${data.user.referral_code}`;
+            document.getElementById('referralLink').value = referralLink;
+            document.getElementById('referralCount').textContent = data.user.referral_count;
+            document.getElementById('referralBonus').textContent = formatCurrency(data.user.referral_bonus) + ' ₽';
+        }
+        
+        // ====================== ОСНОВНЫЕ ФУНКЦИИ ======================
+        
+        function addTransaction(transaction) {
+            const data = getUserData();
+            transaction.id = data.transactions.length ? Math.max(...data.transactions.map(t => t.id)) + 1 : 1;
+            transaction.date = new Date().toISOString();
+            data.transactions.unshift(transaction);
+            
+            // Обновляем баланс
+            if (transaction.type === 'income') {
+                data.user.balance += transaction.amount;
+            } else {
+                data.user.balance -= transaction.amount;
+            }
+            
+            saveUserData(data);
+            
+            // Если это доход и есть цели, предлагаем распределить
+            if (transaction.type === 'income') {
+                const activeGoals = data.goals.filter(g => !g.completed);
+                if (activeGoals.length > 0) {
+                    setTimeout(() => {
+                        showGoalAllocationModal(transaction.amount, transaction.category);
+                    }, 500);
+                }
+            }
+            
+            return transaction;
+        }
+        
+        function updateTransaction(transactionId, updatedData) {
+            const data = getUserData();
+            const transactionIndex = data.transactions.findIndex(t => t.id === transactionId);
+            
+            if (transactionIndex === -1) return null;
+            
+            const oldTransaction = data.transactions[transactionIndex];
+            
+            // Возвращаем старую сумму в баланс
+            if (oldTransaction.type === 'income') {
+                data.user.balance -= oldTransaction.amount;
+            } else {
+                data.user.balance += oldTransaction.amount;
+            }
+            
+            // Применяем новую сумму
+            if (updatedData.type === 'income') {
+                data.user.balance += updatedData.amount;
+            } else {
+                data.user.balance -= updatedData.amount;
+            }
+            
+            // Обновляем транзакцию
+            data.transactions[transactionIndex] = {
+                ...oldTransaction,
+                ...updatedData,
+                id: transactionId,
+                date: oldTransaction.date
             };
             
-            localStorage.setItem(userDataKey, JSON.stringify(initialData));
-        }
-    }
-    
-    function getUserData() {
-        const userDataKey = `finance_user_${userId}`;
-        return JSON.parse(localStorage.getItem(userDataKey)) || {};
-    }
-    
-    function saveUserData(data) {
-        const userDataKey = `finance_user_${userId}`;
-        localStorage.setItem(userDataKey, JSON.stringify(data));
-    }
-    
-    function addTransaction(transaction) {
-        const data = getUserData();
-        transaction.id = data.transactions.length ? Math.max(...data.transactions.map(t => t.id)) + 1 : 1;
-        transaction.date = new Date().toISOString();
-        data.transactions.unshift(transaction);
-        
-        // Обновляем баланс
-        if (transaction.type === 'income') {
-            data.user.balance += transaction.amount;
-        } else {
-            data.user.balance -= transaction.amount;
+            saveUserData(data);
+            return data.transactions[transactionIndex];
         }
         
-        saveUserData(data);
-        return transaction;
-    }
-    
-    function addGoal(goal) {
-        const data = getUserData();
-        goal.id = data.goals.length ? Math.max(...data.goals.map(g => g.id)) + 1 : 1;
-        goal.created_at = new Date().toISOString();
-        goal.completed = false;
-        goal.current_amount = 0;
-        goal.progress_percentage = 0;
-        data.goals.unshift(goal);
-        saveUserData(data);
-        return goal;
-    }
-    
-    function addInvestment(investment) {
-        const data = getUserData();
-        investment.id = data.investments.length ? Math.max(...data.investments.map(i => i.id)) + 1 : 1;
-        investment.purchase_date = new Date().toISOString();
-        investment.current_value = investment.amount_invested;
-        investment.profit_loss = 0;
-        investment.roi_percentage = 0;
-        data.investments.unshift(investment);
-        saveUserData(data);
-        return investment;
-    }
-    
-    function updateGoalProgress(goalId, amount) {
-        const data = getUserData();
-        const goal = data.goals.find(g => g.id === goalId);
-        if (goal) {
+        function deleteTransactionById(transactionId) {
+            const data = getUserData();
+            const transactionIndex = data.transactions.findIndex(t => t.id === transactionId);
+            
+            if (transactionIndex === -1) return false;
+            
+            const transaction = data.transactions[transactionIndex];
+            
+            // Возвращаем сумму в баланс
+            if (transaction.type === 'income') {
+                data.user.balance -= transaction.amount;
+            } else {
+                data.user.balance += transaction.amount;
+            }
+            
+            // Удаляем транзакцию
+            data.transactions.splice(transactionIndex, 1);
+            
+            saveUserData(data);
+            return true;
+        }
+        
+        function addGoal(goal) {
+            const data = getUserData();
+            goal.id = data.goals.length ? Math.max(...data.goals.map(g => g.id)) + 1 : 1;
+            goal.created_at = new Date().toISOString();
+            goal.completed = false;
+            goal.current_amount = 0;
+            goal.progress_percentage = 0;
+            data.goals.unshift(goal);
+            saveUserData(data);
+            return goal;
+        }
+        
+        function updateGoal(goalId, updatedData) {
+            const data = getUserData();
+            const goalIndex = data.goals.findIndex(g => g.id === goalId);
+            
+            if (goalIndex === -1) return null;
+            
+            const oldGoal = data.goals[goalIndex];
+            
+            // Обновляем цель
+            data.goals[goalIndex] = {
+                ...oldGoal,
+                ...updatedData,
+                id: goalId,
+                created_at: oldGoal.created_at
+            };
+            
+            // Пересчитываем прогресс
+            const goal = data.goals[goalIndex];
+            goal.progress_percentage = (goal.current_amount / goal.target_amount) * 100;
+            goal.completed = goal.current_amount >= goal.target_amount;
+            
+            if (goal.completed && !oldGoal.completed) {
+                goal.completed_at = new Date().toISOString();
+            }
+            
+            saveUserData(data);
+            return data.goals[goalIndex];
+        }
+        
+        function addToGoal(goalId, amount, comment = '') {
+            const data = getUserData();
+            const goal = data.goals.find(g => g.id === goalId);
+            
+            if (!goal) return false;
+            
+            // Проверяем, достаточно ли средств на балансе
+            if (data.user.balance < amount) {
+                showError('Недостаточно средств на балансе');
+                return false;
+            }
+            
+            // Снимаем деньги с баланса
+            data.user.balance -= amount;
+            
+            // Пополняем цель
             goal.current_amount += amount;
             goal.progress_percentage = (goal.current_amount / goal.target_amount) * 100;
-            if (goal.current_amount >= goal.target_amount) {
+            
+            if (goal.current_amount >= goal.target_amount && !goal.completed) {
                 goal.completed = true;
                 goal.completed_at = new Date().toISOString();
             }
+            
+            // Создаем транзакцию на пополнение цели
+            const transaction = {
+                user_id: userId,
+                amount: amount,
+                category: 'накопления',
+                type: 'expense',
+                description: `Пополнение цели: ${goal.title}` + (comment ? ` (${comment})` : ''),
+                tags: 'цель, накопления'
+            };
+            
+            addTransaction(transaction);
+            
             saveUserData(data);
-        }
-    }
-    
-    // ====================== АНАЛИТИКА И РАСЧЁТЫ ======================
-    
-    function getFinancialSummary(period = 'month') {
-        const data = getUserData();
-        const now = new Date();
-        let startDate = new Date();
-        
-        switch(period) {
-            case 'week':
-                startDate.setDate(now.getDate() - 7);
-                break;
-            case 'month':
-                startDate.setMonth(now.getMonth() - 1);
-                break;
-            case 'year':
-                startDate.setFullYear(now.getFullYear() - 1);
-                break;
-            case 'all':
-                startDate = new Date(0); // Начало времён
-                break;
+            return true;
         }
         
-        const transactions = data.transactions.filter(t => 
-            new Date(t.date) >= startDate
-        );
+        function deleteGoalById(goalId) {
+            const data = getUserData();
+            const goalIndex = data.goals.findIndex(g => g.id === goalId);
+            
+            if (goalIndex === -1) return false;
+            
+            // Возвращаем деньги на баланс (если цель не была завершена)
+            const goal = data.goals[goalIndex];
+            if (!goal.completed && goal.current_amount > 0) {
+                data.user.balance += goal.current_amount;
+            }
+            
+            data.goals.splice(goalIndex, 1);
+            saveUserData(data);
+            return true;
+        }
         
-        const totalIncome = transactions
-            .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
+        function addInvestment(investment) {
+            const data = getUserData();
+            investment.id = data.investments.length ? Math.max(...data.investments.map(i => i.id)) + 1 : 1;
+            investment.purchase_date = new Date().toISOString();
+            investment.current_value = investment.amount_invested;
+            investment.profit_loss = 0;
+            investment.roi_percentage = 0;
+            investment.current_price = investment.price_per_unit;
+            data.investments.unshift(investment);
+            saveUserData(data);
+            
+            // Создаем транзакцию на инвестицию
+            const transaction = {
+                user_id: userId,
+                amount: investment.amount_invested,
+                category: 'инвестиции',
+                type: 'expense',
+                description: `Инвестиция: ${investment.asset_name}`,
+                tags: 'инвестиция'
+            };
+            
+            addTransaction(transaction);
+            
+            return investment;
+        }
         
-        const totalExpenses = transactions
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+        function updateInvestment(investmentId, updatedData) {
+            const data = getUserData();
+            const investmentIndex = data.investments.findIndex(i => i.id === investmentId);
+            
+            if (investmentIndex === -1) return null;
+            
+            const oldInvestment = data.investments[investmentIndex];
+            
+            // Обновляем инвестицию
+            data.investments[investmentIndex] = {
+                ...oldInvestment,
+                ...updatedData,
+                id: investmentId,
+                purchase_date: oldInvestment.purchase_date
+            };
+            
+            // Пересчитываем текущую стоимость и прибыль
+            const investment = data.investments[investmentIndex];
+            investment.current_value = investment.quantity * investment.current_price;
+            investment.profit_loss = investment.current_value - investment.amount_invested;
+            investment.roi_percentage = investment.amount_invested > 0 ? 
+                (investment.profit_loss / investment.amount_invested) * 100 : 0;
+            
+            saveUserData(data);
+            return data.investments[investmentIndex];
+        }
         
-        const totalInvestments = data.investments
-            .reduce((sum, i) => sum + i.amount_invested, 0);
+        function deleteInvestmentById(investmentId) {
+            const data = getUserData();
+            const investmentIndex = data.investments.findIndex(i => i.id === investmentId);
+            
+            if (investmentIndex === -1) return false;
+            
+            const investment = data.investments[investmentIndex];
+            
+            // Возвращаем деньги на баланс (текущая стоимость)
+            data.user.balance += investment.current_value;
+            
+            // Удаляем инвестицию
+            data.investments.splice(investmentIndex, 1);
+            
+            saveUserData(data);
+            return true;
+        }
         
-        const netIncome = totalIncome - totalExpenses;
-        const savingsRate = totalIncome > 0 ? (netIncome / totalIncome) * 100 : 0;
+        // ====================== РАСЧЕТЫ И АНАЛИТИКА ======================
         
-        // Структура расходов
-        const expenseStructure = [];
-        const expenseByCategory = {};
+        function getFinancialSummary(period = 'month') {
+            const data = getUserData();
+            const now = new Date();
+            let startDate = new Date();
+            
+            switch(period) {
+                case 'week': startDate.setDate(now.getDate() - 7); break;
+                case 'month': startDate.setMonth(now.getMonth() - 1); break;
+                case 'year': startDate.setFullYear(now.getFullYear() - 1); break;
+                case 'all': startDate = new Date(0); break;
+            }
+            
+            const transactions = data.transactions.filter(t => new Date(t.date) >= startDate);
+            
+            const totalIncome = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalExpenses = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalInvestments = data.investments
+                .reduce((sum, i) => sum + i.current_value, 0);
+            
+            const netIncome = totalIncome - totalExpenses;
+            const savingsRate = totalIncome > 0 ? (netIncome / totalIncome) * 100 : 0;
+            
+            // Структура расходов
+            const expenseStructure = [];
+            const expenseByCategory = {};
+            
+            transactions
+                .filter(t => t.type === 'expense')
+                .forEach(t => {
+                    if (!expenseByCategory[t.category]) expenseByCategory[t.category] = 0;
+                    expenseByCategory[t.category] += t.amount;
+                });
+            
+            Object.entries(expenseByCategory).forEach(([category, amount]) => {
+                expenseStructure.push({
+                    category,
+                    amount,
+                    percentage: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0
+                });
+            });
+            
+            expenseStructure.sort((a, b) => b.amount - a.amount);
+            
+            // Последние транзакции
+            const recentTransactions = transactions.slice(0, 5);
+            
+            return {
+                summary: {
+                    total_income: totalIncome,
+                    total_expenses: totalExpenses,
+                    total_investments: totalInvestments,
+                    net_income: netIncome,
+                    savings_rate: savingsRate,
+                    total_transactions: transactions.length
+                },
+                expense_structure: expenseStructure,
+                recent_transactions: recentTransactions,
+                currency: '₽'
+            };
+        }
         
-        transactions
-            .filter(t => t.type === 'expense')
-            .forEach(t => {
-                if (!expenseByCategory[t.category]) {
-                    expenseByCategory[t.category] = 0;
+        function getFinancialHealthScore(summary) {
+            let score = 50;
+            
+            const savingsRate = summary.summary.savings_rate;
+            if (savingsRate >= 20) score += 30;
+            else if (savingsRate >= 10) score += 20;
+            else if (savingsRate >= 0) score += 10;
+            else score -= 10;
+            
+            const expenseRatio = summary.summary.total_expenses / Math.max(summary.summary.total_income, 1) * 100;
+            if (expenseRatio <= 70) score += 20;
+            else if (expenseRatio <= 85) score += 10;
+            else if (expenseRatio <= 100) score += 5;
+            else score -= 10;
+            
+            const data = getUserData();
+            if (data.goals && data.goals.length > 0) score += 10;
+            if (data.investments && data.investments.length > 0) score += 10;
+            
+            return Math.min(Math.max(score, 0), 100);
+        }
+        
+        function generateAdvice(summary) {
+            const advice = [];
+            
+            if (summary.summary.savings_rate < 10) {
+                advice.push({ advice_text: '💡 Попробуйте откладывать минимум 10% от доходов', priority: 2 });
+            }
+            
+            if (summary.summary.total_expenses > summary.summary.total_income * 0.8) {
+                advice.push({ advice_text: '⚠️ Расходы превышают 80% доходов. Пересмотрите траты', priority: 1 });
+            }
+            
+            const data = getUserData();
+            if (data.goals.length === 0) {
+                advice.push({ advice_text: '🎯 Создайте финансовую цель для мотивации', priority: 3 });
+            }
+            
+            if (data.investments.length === 0 && summary.summary.savings_rate > 10) {
+                advice.push({ advice_text: '📈 Рассмотрите возможность инвестирования', priority: 2 });
+            }
+            
+            if (advice.length < 3) {
+                advice.push({ advice_text: '💰 Ведите учёт всех доходов и расходов', priority: 3 });
+                advice.push({ advice_text: '📊 Регулярно анализируйте структуру расходов', priority: 2 });
+            }
+            
+            return advice.slice(0, 5);
+        }
+        
+        // ====================== UI ОБНОВЛЕНИЯ ======================
+        
+        function updateDashboard() {
+            const data = getUserData();
+            const summary = getFinancialSummary('month');
+            const healthScore = getFinancialHealthScore(summary);
+            
+            // Обновляем баланс с форматированием
+            document.getElementById('balanceAmount').textContent = 
+                `${formatCurrency(data.user.balance)} ₽`;
+            
+            // Обновляем статистику с форматированием
+            document.getElementById('incomeValue').textContent = 
+                `${formatCurrency(summary.summary.total_income)} ₽`;
+            document.getElementById('expenseValue').textContent = 
+                `${formatCurrency(summary.summary.total_expenses)} ₽`;
+            document.getElementById('savingsValue').textContent = 
+                `${summary.summary.savings_rate.toFixed(1)}%`;
+            document.getElementById('investmentValue').textContent = 
+                `${formatCurrency(summary.summary.total_investments)} ₽`;
+            
+            // Обновляем счетчики
+            document.getElementById('incomeCount').textContent = 
+                `${data.transactions.filter(t => t.type === 'income').length} операций`;
+            document.getElementById('expenseCount').textContent = 
+                `${data.transactions.filter(t => t.type === 'expense').length} операций`;
+            document.getElementById('investmentCount').textContent = 
+                `${data.investments.length} активов`;
+            
+            // Обновляем изменение баланса
+            const balanceChange = summary.summary.net_income;
+            const changeElement = document.getElementById('balanceChange');
+            changeElement.textContent = 
+                `${balanceChange >= 0 ? '+' : ''}${formatCurrency(balanceChange)} ₽ за месяц`;
+            changeElement.style.color = balanceChange >= 0 ? '#4CAF50' : '#f44336';
+            
+            // Обновляем финансовое здоровье
+            const scoreElement = document.getElementById('healthScore');
+            const fillElement = document.getElementById('healthFill');
+            const statusElement = document.getElementById('healthStatus');
+            
+            scoreElement.textContent = Math.round(healthScore);
+            fillElement.style.width = `${healthScore}%`;
+            
+            let statusText = '';
+            let healthClass = '';
+            
+            if (healthScore >= 80) {
+                statusText = 'Отличное состояние';
+                healthClass = 'excellent';
+            } else if (healthScore >= 60) {
+                statusText = 'Хорошее состояние';
+                healthClass = 'good';
+            } else {
+                statusText = 'Требует внимания';
+                healthClass = 'poor';
+            }
+            
+            scoreElement.className = `health-score ${healthClass}`;
+            fillElement.className = `health-fill ${healthClass}`;
+            statusElement.textContent = statusText;
+            
+            // Обновляем график, транзакции и советы
+            updateExpenseChart(summary.expense_structure);
+            updateRecentTransactions(summary.recent_transactions);
+            updateAdvice(generateAdvice(summary));
+            
+            // Обновляем время обновления
+            document.getElementById('lastUpdate').textContent = 
+                `Обновлено: ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}`;
+        }
+        
+        function updateRecentTransactions(transactions) {
+            const container = document.getElementById('recentTransactions');
+            
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>Нет операций за месяц</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            transactions.slice(0, 5).forEach(transaction => {
+                const isIncome = transaction.type === 'income';
+                const date = new Date(transaction.date);
+                const formattedDate = date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+                
+                html += `
+                    <div class="transaction-item transaction-${transaction.type}">
+                        <div class="transaction-icon">
+                            <i class="fas fa-${isIncome ? 'arrow-up' : 'arrow-down'}"></i>
+                        </div>
+                        <div class="transaction-info">
+                            <div class="transaction-category">${transaction.category}</div>
+                            <div class="transaction-description">${transaction.description || ''}</div>
+                            <div class="transaction-date">${formattedDate}</div>
+                        </div>
+                        <div class="transaction-amount">
+                            ${isIncome ? '+' : '-'}${formatCurrency(transaction.amount)} ₽
+                        </div>
+                        <div class="transaction-actions">
+                            <div class="action-icon" onclick="editTransaction(${transaction.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // ====================== УПРАВЛЕНИЕ ВКЛАДКАМИ ======================
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            const tabElement = document.getElementById(tabName + 'Tab');
+            if (tabElement) {
+                tabElement.classList.add('active');
+                
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    if (tab.textContent.includes(getTabTitle(tabName))) {
+                        tab.classList.add('active');
+                    }
+                });
+                
+                loadTabData(tabName);
+            }
+        }
+        
+        function getTabTitle(tabName) {
+            const titles = {
+                'dashboard': 'Главная',
+                'transactions': 'Операции',
+                'goals': 'Цели',
+                'investments': 'Инвестиции',
+                'profile': 'Профиль'
+            };
+            return titles[tabName];
+        }
+        
+        function loadTabData(tabName) {
+            switch(tabName) {
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+                case 'transactions':
+                    loadTransactions();
+                    break;
+                case 'goals':
+                    loadGoals();
+                    break;
+                case 'investments':
+                    loadInvestments();
+                    break;
+                case 'profile':
+                    loadProfile();
+                    break;
+            }
+        }
+        
+        // ====================== ФУНКЦИИ МОДАЛЬНЫХ ОКОН ======================
+        
+        function showTransactionModal(type) {
+            currentTransactionType = type;
+            const modal = document.getElementById('transactionModal');
+            const title = document.getElementById('modalTitle');
+            
+            title.textContent = type === 'income' ? 'Добавить доход' : 'Добавить расход';
+            loadCategoryOptions(type);
+            
+            document.getElementById('amountInput').value = '';
+            document.getElementById('descriptionInput').value = '';
+            document.getElementById('tagsInput').value = '';
+            document.getElementById('customCategoryInput').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('amountInput').focus(), 300);
+        }
+        
+        function editTransaction(transactionId) {
+            const data = getUserData();
+            const transaction = data.transactions.find(t => t.id === transactionId);
+            
+            if (!transaction) return;
+            
+            const modal = document.getElementById('editTransactionModal');
+            
+            document.getElementById('editTransactionId').value = transactionId;
+            document.getElementById('editAmountInput').value = formatCurrency(transaction.amount);
+            document.getElementById('editDescriptionInput').value = transaction.description || '';
+            document.getElementById('editTagsInput').value = transaction.tags || '';
+            document.getElementById('editTypeSelect').value = transaction.type;
+            
+            // Загружаем категории для редактирования
+            const select = document.getElementById('editCategorySelect');
+            select.innerHTML = '<option value="">Выберите категорию</option>';
+            
+            const categories = data.categories.filter(cat => cat.type === transaction.type);
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = `${cat.icon} ${cat.name}`;
+                if (cat.name === transaction.category) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            modal.style.display = 'block';
+        }
+        
+        function saveEditedTransaction() {
+            const transactionId = parseInt(document.getElementById('editTransactionId').value);
+            const amount = parseCurrency(document.getElementById('editAmountInput').value);
+            const category = document.getElementById('editCategorySelect').value;
+            const type = document.getElementById('editTypeSelect').value;
+            const description = document.getElementById('editDescriptionInput').value;
+            const tags = document.getElementById('editTagsInput').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Введите корректную сумму');
+                return;
+            }
+            
+            if (!category) {
+                showError('Выберите категорию');
+                return;
+            }
+            
+            const updatedTransaction = {
+                amount: amount,
+                category: category,
+                type: type,
+                description: description,
+                tags: tags
+            };
+            
+            updateTransaction(transactionId, updatedTransaction);
+            
+            closeEditModal();
+            updateDashboard();
+            loadTransactions();
+            showSuccess('Транзакция обновлена!');
+        }
+        
+        function deleteTransaction() {
+            const transactionId = parseInt(document.getElementById('editTransactionId').value);
+            
+            if (confirm('Удалить эту транзакцию?')) {
+                deleteTransactionById(transactionId);
+                closeEditModal();
+                updateDashboard();
+                loadTransactions();
+                showSuccess('Транзакция удалена!');
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editTransactionModal').style.display = 'none';
+        }
+        
+        // ====================== ЦЕЛИ ======================
+        
+        function showGoalModal() {
+            const modal = document.getElementById('goalModal');
+            const dateInput = document.getElementById('goalDeadline');
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            dateInput.min = tomorrow.toISOString().split('T')[0];
+            
+            const inThreeMonths = new Date();
+            inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
+            dateInput.value = inThreeMonths.toISOString().split('T')[0];
+            
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalAmount').value = '';
+            document.getElementById('goalCategory').value = 'накопления';
+            document.getElementById('goalPriority').value = '1';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('goalTitle').focus(), 300);
+        }
+        
+        function editGoal(goalId) {
+            const data = getUserData();
+            const goal = data.goals.find(g => g.id === goalId);
+            
+            if (!goal) return;
+            
+            const modal = document.getElementById('editGoalModal');
+            
+            document.getElementById('editGoalId').value = goalId;
+            document.getElementById('editGoalTitle').value = goal.title;
+            document.getElementById('editGoalCurrentAmount').value = formatCurrency(goal.current_amount);
+            document.getElementById('editGoalTargetAmount').value = formatCurrency(goal.target_amount);
+            document.getElementById('editGoalDeadline').value = goal.deadline;
+            document.getElementById('editGoalCategory').value = goal.category;
+            
+            modal.style.display = 'block';
+        }
+        
+        function saveEditedGoal() {
+            const goalId = parseInt(document.getElementById('editGoalId').value);
+            const title = document.getElementById('editGoalTitle').value.trim();
+            const currentAmount = parseCurrency(document.getElementById('editGoalCurrentAmount').value);
+            const targetAmount = parseCurrency(document.getElementById('editGoalTargetAmount').value);
+            const deadline = document.getElementById('editGoalDeadline').value;
+            const category = document.getElementById('editGoalCategory').value;
+            
+            if (!title) {
+                showError('Введите название цели');
+                return;
+            }
+            
+            if (!targetAmount || targetAmount <= 0) {
+                showError('Введите корректную целевую сумму');
+                return;
+            }
+            
+            const updatedGoal = {
+                title: title,
+                current_amount: currentAmount,
+                target_amount: targetAmount,
+                deadline: deadline,
+                category: category
+            };
+            
+            updateGoal(goalId, updatedGoal);
+            
+            closeEditGoalModal();
+            updateDashboard();
+            loadGoals();
+            showSuccess('Цель обновлена!');
+        }
+        
+        function deleteGoal() {
+            const goalId = parseInt(document.getElementById('editGoalId').value);
+            
+            if (confirm('Удалить эту цель?')) {
+                deleteGoalById(goalId);
+                closeEditGoalModal();
+                updateDashboard();
+                loadGoals();
+                showSuccess('Цель удалена!');
+            }
+        }
+        
+        function closeEditGoalModal() {
+            document.getElementById('editGoalModal').style.display = 'none';
+        }
+        
+        function showAddToGoalModal(goalId) {
+            const data = getUserData();
+            const goal = data.goals.find(g => g.id === goalId);
+            
+            if (!goal) return;
+            
+            const modal = document.getElementById('addToGoalModal');
+            
+            document.getElementById('addToGoalId').value = goalId;
+            document.getElementById('addToGoalAmount').value = '';
+            document.getElementById('addToGoalComment').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('addToGoalAmount').focus(), 300);
+        }
+        
+        function processAddToGoal() {
+            const goalId = parseInt(document.getElementById('addToGoalId').value);
+            const amount = parseCurrency(document.getElementById('addToGoalAmount').value);
+            const comment = document.getElementById('addToGoalComment').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Введите корректную сумму');
+                return;
+            }
+            
+            if (addToGoal(goalId, amount, comment)) {
+                closeAddToGoalModal();
+                updateDashboard();
+                loadGoals();
+                showSuccess(`Цель пополнена на ${formatCurrency(amount)} ₽!`);
+            }
+        }
+        
+        function closeAddToGoalModal() {
+            document.getElementById('addToGoalModal').style.display = 'none';
+        }
+        
+        function loadGoals() {
+            const data = getUserData();
+            const activeGoals = data.goals.filter(g => !g.completed);
+            const completedGoals = data.goals.filter(g => g.completed);
+            
+            updateGoalsList(activeGoals);
+            updateCompletedGoalsList(completedGoals);
+        }
+        
+        function updateGoalsList(goals) {
+            const container = document.getElementById('goalsList');
+            
+            if (!goals || goals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullseye"></i>
+                        <div>У вас пока нет финансовых целей</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            goals.forEach(goal => {
+                const deadline = new Date(goal.deadline);
+                const now = new Date();
+                const daysRemaining = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                const progressPercentage = (goal.current_amount / goal.target_amount) * 100;
+                const dailyRequired = daysRemaining > 0 ? 
+                    (goal.target_amount - goal.current_amount) / daysRemaining : 0;
+                
+                html += `
+                    <div class="goal-item">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px;">${goal.title}</div>
+                                <div style="font-size: 14px; color: #666; margin-top: 2px;">
+                                    <i class="fas fa-tag"></i> ${goal.category}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 18px;">${formatCurrency(goal.current_amount)} ₽</div>
+                                <div style="font-size: 14px; color: #666;">из ${formatCurrency(goal.target_amount)} ₽</div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span>${progressPercentage.toFixed(1)}%</span>
+                                <span style="color: ${daysRemaining > 0 ? '#666' : '#f44336'}; font-size: 14px;">
+                                    ${daysRemaining > 0 ? `⏰ ${daysRemaining} дн. осталось` : '⚠️ Срок истек'}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <div style="font-size: 14px; color: #666;">
+                                <i class="fas fa-calendar"></i> Срок: ${goal.deadline}
+                            </div>
+                            <div style="font-size: 14px; color: #666;">
+                                <i class="fas fa-coins"></i> Ежедневно: ${formatCurrency(dailyRequired)} ₽
+                            </div>
+                        </div>
+                        
+                        <div class="goal-actions">
+                            <button class="goal-btn" onclick="showAddToGoalModal(${goal.id})">
+                                <i class="fas fa-plus"></i> Пополнить
+                            </button>
+                            <button class="goal-btn" onclick="editGoal(${goal.id})">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // ====================== ИНВЕСТИЦИИ ======================
+        
+        function showInvestmentModal() {
+            const modal = document.getElementById('investmentModal');
+            
+            document.getElementById('investmentType').value = 'stock';
+            document.getElementById('investmentName').value = '';
+            document.getElementById('investmentPrice').value = '';
+            document.getElementById('investmentQuantity').value = '1';
+            document.getElementById('investmentAmount').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('investmentName').focus(), 300);
+        }
+        
+        function editInvestment(investmentId) {
+            const data = getUserData();
+            const investment = data.investments.find(i => i.id === investmentId);
+            
+            if (!investment) return;
+            
+            const modal = document.getElementById('editInvestmentModal');
+            
+            document.getElementById('editInvestmentId').value = investmentId;
+            document.getElementById('editInvestmentType').value = investment.asset_type;
+            document.getElementById('editInvestmentName').value = investment.asset_name;
+            document.getElementById('editInvestmentPrice').value = formatCurrency(investment.price_per_unit);
+            document.getElementById('editInvestmentQuantity').value = investment.quantity;
+            document.getElementById('editInvestmentCurrentPrice').value = formatCurrency(investment.current_price);
+            document.getElementById('editInvestmentAmount').value = formatCurrency(investment.amount_invested);
+            
+            // Рассчитываем значения
+            calculateEditInvestmentTotal();
+            calculateEditInvestmentProfit();
+            
+            modal.style.display = 'block';
+        }
+        
+        function calculateEditInvestmentTotal() {
+            const price = parseCurrency(document.getElementById('editInvestmentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 0;
+            const total = price * quantity;
+            document.getElementById('editInvestmentAmount').value = formatCurrency(total);
+        }
+        
+        function calculateEditInvestmentProfit() {
+            const currentPrice = parseCurrency(document.getElementById('editInvestmentCurrentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 0;
+            const invested = parseCurrency(document.getElementById('editInvestmentAmount').value) || 0;
+            
+            const currentValue = currentPrice * quantity;
+            const profit = currentValue - invested;
+            
+            document.getElementById('editInvestmentCurrentValue').value = formatCurrency(currentValue);
+            document.getElementById('editInvestmentProfit').value = formatCurrency(profit);
+        }
+        
+        function saveEditedInvestment() {
+            const investmentId = parseInt(document.getElementById('editInvestmentId').value);
+            const assetType = document.getElementById('editInvestmentType').value;
+            const assetName = document.getElementById('editInvestmentName').value.trim();
+            const pricePerUnit = parseCurrency(document.getElementById('editInvestmentPrice').value);
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 1;
+            const currentPrice = parseCurrency(document.getElementById('editInvestmentCurrentPrice').value);
+            
+            if (!assetName) {
+                showError('Введите название актива');
+                return;
+            }
+            
+            if (!pricePerUnit || pricePerUnit <= 0) {
+                showError('Введите корректную цену');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showError('Введите корректное количество');
+                return;
+            }
+            
+            const updatedInvestment = {
+                asset_type: assetType,
+                asset_name: assetName,
+                price_per_unit: pricePerUnit,
+                quantity: quantity,
+                amount_invested: pricePerUnit * quantity,
+                current_price: currentPrice || pricePerUnit
+            };
+            
+            updateInvestment(investmentId, updatedInvestment);
+            
+            closeEditInvestmentModal();
+            updateDashboard();
+            loadInvestments();
+            showSuccess('Инвестиция обновлена!');
+        }
+        
+        function deleteInvestment() {
+            const investmentId = parseInt(document.getElementById('editInvestmentId').value);
+            
+            if (confirm('Удалить эту инвестицию? Средства вернутся на баланс.')) {
+                deleteInvestmentById(investmentId);
+                closeEditInvestmentModal();
+                updateDashboard();
+                loadInvestments();
+                showSuccess('Инвестиция удалена! Средства возвращены на баланс.');
+            }
+        }
+        
+        function closeEditInvestmentModal() {
+            document.getElementById('editInvestmentModal').style.display = 'none';
+        }
+        
+        function calculateInvestmentTotal() {
+            const price = parseCurrency(document.getElementById('investmentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('investmentQuantity').value) || 0;
+            const total = price * quantity;
+            document.getElementById('investmentAmount').value = formatCurrency(total);
+        }
+        
+        function loadInvestments() {
+            const data = getUserData();
+            updateInvestmentsList(data.investments);
+        }
+        
+        function updateInvestmentsList(investments) {
+            const container = document.getElementById('investmentsList');
+            
+            if (!investments || investments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <div>У вас пока нет инвестиций</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let totalInvested = 0;
+            let totalCurrent = 0;
+            
+            let html = '';
+            investments.forEach(inv => {
+                const profitLoss = inv.profit_loss || 0;
+                const roi = inv.roi_percentage || 0;
+                const isPositive = profitLoss >= 0;
+                
+                totalInvested += inv.amount_invested;
+                totalCurrent += inv.current_value || inv.amount_invested;
+                
+                html += `
+                    <div class="investment-card">
+                        <div class="investment-actions">
+                            <div class="action-icon" onclick="editInvestment(${inv.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px;">${inv.asset_name}</div>
+                                <div style="font-size: 14px; color: #666; margin-top: 2px;">
+                                    <i class="fas fa-${getInvestmentIcon(inv.asset_type)}"></i> ${getInvestmentTypeName(inv.asset_type)}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 18px;">${formatCurrency(inv.current_value || inv.amount_invested)} ₽</div>
+                                <div style="font-size: 14px; color: #666;">${inv.quantity} шт.</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <div style="font-size: 14px; color: #666;">
+                                Цена: ${formatCurrency(inv.price_per_unit || (inv.amount_invested / inv.quantity))} ₽
+                            </div>
+                            <div class="performance-badge ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '📈' : '📉'} ${profitLoss >= 0 ? '+' : ''}${formatCurrency(profitLoss)} ₽ (${roi.toFixed(1)}%)
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                            <i class="fas fa-calendar"></i> Куплено: ${new Date(inv.purchase_date).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const totalProfit = totalCurrent - totalInvested;
+            const totalRoi = totalInvested > 0 ? (totalProfit / totalInvested * 100) : 0;
+            
+            html += `
+                <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; margin-bottom: 10px; text-align: center;">Итоговая статистика</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: center;">
+                        <div>
+                            <div style="font-size: 12px; color: #666;">Всего инвестировано</div>
+                            <div style="font-weight: 600; font-size: 16px;">${formatCurrency(totalInvested)} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #666;">Текущая стоимость</div>
+                            <div style="font-weight: 600; font-size: 16px;">${formatCurrency(totalCurrent)} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #666;">Прибыль/убыток</div>
+                            <div style="font-weight: 600; font-size: 16px; color: ${totalProfit >= 0 ? '#4CAF50' : '#f44336'}">
+                                ${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit)} ₽
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #666;">Доходность (ROI)</div>
+                            <div style="font-weight: 600; font-size: 16px; color: ${totalRoi >= 0 ? '#4CAF50' : '#f44336'}">
+                                ${totalRoi >= 0 ? '+' : ''}${totalRoi.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // ====================== РЕФЕРАЛЬНАЯ СИСТЕМА И ОТЧЕТЫ ======================
+        
+        function copyReferralLink() {
+            const input = document.getElementById('referralLink');
+            input.select();
+            document.execCommand('copy');
+            showSuccess('Ссылка скопирована в буфер обмена!');
+        }
+        
+        function generateReport(type) {
+            const data = getUserData();
+            const summary = getFinancialSummary(type === 'monthly' ? 'month' : 'year');
+            
+            let reportText = `Финансовый отчет (${type === 'monthly' ? 'месячный' : 'годовой'})\n`;
+            reportText += `Дата: ${new Date().toLocaleDateString('ru-RU')}\n`;
+            reportText += `Пользователь: ${data.user.full_name}\n`;
+            reportText += `Период: ${type === 'monthly' ? 'за месяц' : 'за год'}\n\n`;
+            
+            reportText += `📊 ОБЩАЯ СТАТИСТИКА:\n`;
+            reportText += `Баланс: ${formatCurrency(data.user.balance)} ₽\n`;
+            reportText += `Доходы: ${formatCurrency(summary.summary.total_income)} ₽\n`;
+            reportText += `Расходы: ${formatCurrency(summary.summary.total_expenses)} ₽\n`;
+            reportText += `Чистый доход: ${formatCurrency(summary.summary.net_income)} ₽\n`;
+            reportText += `Норма сбережений: ${summary.summary.savings_rate.toFixed(1)}%\n\n`;
+            
+            reportText += `🎯 ЦЕЛИ:\n`;
+            const activeGoals = data.goals.filter(g => !g.completed);
+            const completedGoals = data.goals.filter(g => g.completed);
+            reportText += `Активных: ${activeGoals.length}\n`;
+            reportText += `Завершенных: ${completedGoals.length}\n\n`;
+            
+            reportText += `📈 ИНВЕСТИЦИИ:\n`;
+            reportText += `Всего инвестиций: ${data.investments.length}\n`;
+            reportText += `Общая стоимость: ${formatCurrency(summary.summary.total_investments)} ₽\n\n`;
+            
+            reportText += `💼 ОПЕРАЦИИ:\n`;
+            reportText += `Всего транзакций: ${data.transactions.length}\n`;
+            reportText += `Доходов: ${data.transactions.filter(t => t.type === 'income').length}\n`;
+            reportText += `Расходов: ${data.transactions.filter(t => t.type === 'expense').length}\n`;
+            
+            showSuccess(reportText);
+        }
+        
+        function exportToCSV() {
+            const data = getUserData();
+            const summary = getFinancialSummary('all');
+            
+            let csv = 'Категория,Сумма,Тип,Дата,Описание\n';
+            
+            // Транзакции
+            data.transactions.forEach(t => {
+                const date = new Date(t.date).toLocaleDateString('ru-RU');
+                csv += `"${t.category}",${t.amount},"${t.type}","${date}","${t.description || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `transactions_${userId}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showSuccess('Данные экспортированы в CSV!');
+        }
+        
+        function exportToExcel() {
+            // Простой Excel экспорт через HTML таблицу
+            const data = getUserData();
+            
+            let html = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Финансовый отчет</h1>
+                    <h3>Дата: ${new Date().toLocaleDateString('ru-RU')}</h3>
+                    <h3>Пользователь: ${data.user.full_name}</h3>
+                    
+                    <h2>Транзакции</h2>
+                    <table>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Тип</th>
+                            <th>Категория</th>
+                            <th>Сумма (₽)</th>
+                            <th>Описание</th>
+                        </tr>
+            `;
+            
+            data.transactions.forEach(t => {
+                const date = new Date(t.date).toLocaleDateString('ru-RU');
+                html += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${t.type === 'income' ? 'Доход' : 'Расход'}</td>
+                        <td>${t.category}</td>
+                        <td>${formatCurrency(t.amount)}</td>
+                        <td>${t.description || ''}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </table>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `finance_report_${userId}_${new Date().toISOString().split('T')[0]}.xls`;
+            link.click();
+            
+            showSuccess('Отчет экспортирован в Excel!');
+        }
+        
+        function clearAllData() {
+            if (confirm('Вы уверены? Все данные будут удалены без возможности восстановления.')) {
+                const userDataKey = `finance_user_${userId}`;
+                localStorage.removeItem(userDataKey);
+                initUserData();
+                updateDashboard();
+                loadTransactions();
+                loadGoals();
+                loadInvestments();
+                loadProfile();
+                showSuccess('Все данные очищены!');
+            }
+        }
+        
+        // ====================== ОСТАЛЬНЫЕ ФУНКЦИИ ======================
+        
+        function loadCategoryOptions(type) {
+            const select = document.getElementById('categorySelect');
+            const customGroup = document.getElementById('customCategoryGroup');
+            
+            select.innerHTML = '<option value="">Выберите категорию</option>';
+            selectedCategory = '';
+            customGroup.style.display = 'none';
+            
+            const data = getUserData();
+            const categories = data.categories.filter(cat => cat.type === type);
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = `${cat.icon} ${cat.name}`;
+                select.appendChild(option);
+            });
+            
+            if (!categories.find(cat => cat.name === 'другое')) {
+                const otherOption = document.createElement('option');
+                otherOption.value = 'другое';
+                otherOption.textContent = '📌 Другое (ввести свою)';
+                select.appendChild(otherOption);
+            }
+        }
+        
+        function handleCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            const customGroup = document.getElementById('customCategoryGroup');
+            
+            if (select.value === 'другое') {
+                customGroup.style.display = 'block';
+                selectedCategory = '';
+                setTimeout(() => document.getElementById('customCategoryInput').focus(), 100);
+            } else {
+                customGroup.style.display = 'none';
+                selectedCategory = select.value;
+            }
+        }
+        
+        function submitTransaction() {
+            const amount = parseCurrency(document.getElementById('amountInput').value);
+            const description = document.getElementById('descriptionInput').value;
+            const tags = document.getElementById('tagsInput').value;
+            const categorySelect = document.getElementById('categorySelect');
+            const customCategory = document.getElementById('customCategoryInput').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Пожалуйста, введите корректную сумму');
+                return;
+            }
+            
+            let category = categorySelect.value;
+            if (category === 'другое' && customCategory) {
+                category = customCategory.trim();
+            }
+            
+            if (!category) {
+                showError('Пожалуйста, выберите или введите категорию');
+                return;
+            }
+            
+            const transaction = addTransaction({
+                user_id: userId,
+                amount: amount,
+                category: category,
+                type: currentTransactionType,
+                description: description,
+                tags: tags
+            });
+            
+            updateDashboard();
+            closeModal();
+            showSuccess('Транзакция успешно добавлена!');
+        }
+        
+        function submitGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const amount = parseCurrency(document.getElementById('goalAmount').value);
+            const deadline = document.getElementById('goalDeadline').value;
+            const category = document.getElementById('goalCategory').value;
+            const priority = document.getElementById('goalPriority').value;
+            
+            if (!title) {
+                showError('Пожалуйста, введите название цели');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                showError('Пожалуйста, введите корректную сумму');
+                return;
+            }
+            
+            const goal = addGoal({
+                user_id: userId,
+                title: title,
+                target_amount: amount,
+                deadline: deadline,
+                category: category,
+                priority: parseInt(priority)
+            });
+            
+            loadGoals();
+            closeModal();
+            showSuccess('Цель успешно создана!');
+        }
+        
+        function submitInvestment() {
+            const assetType = document.getElementById('investmentType').value;
+            const assetName = document.getElementById('investmentName').value.trim();
+            const price = parseCurrency(document.getElementById('investmentPrice').value);
+            const quantity = parseFloat(document.getElementById('investmentQuantity').value) || 1;
+            const total = parseCurrency(document.getElementById('investmentAmount').value);
+            
+            if (!assetName) {
+                showError('Пожалуйста, введите название актива');
+                return;
+            }
+            
+            if (!price || price <= 0) {
+                showError('Пожалуйста, введите корректную цену');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showError('Пожалуйста, введите корректное количество');
+                return;
+            }
+            
+            const investment = addInvestment({
+                user_id: userId,
+                asset_type: assetType,
+                asset_name: assetName,
+                price_per_unit: price,
+                quantity: quantity,
+                amount_invested: total
+            });
+            
+            loadInvestments();
+            updateDashboard();
+            closeModal();
+            showSuccess('Инвестиция успешно добавлена!');
+        }
+        
+        function closeModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+            document.getElementById('goalModal').style.display = 'none';
+            document.getElementById('investmentModal').style.display = 'none';
+            selectedCategory = '';
+        }
+        
+        function loadTransactions() {
+            const data = getUserData();
+            updateTransactionsListFull(data.transactions);
+        }
+        
+        function updateTransactionsListFull(transactions) {
+            const container = document.getElementById('transactionsList');
+            
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>Нет операций</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            transactions.forEach(transaction => {
+                const isIncome = transaction.type === 'income';
+                const date = new Date(transaction.date);
+                const formattedDate = date.toLocaleDateString('ru-RU', { 
+                    day: '2-digit', 
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const tags = transaction.tags ? 
+                    transaction.tags.split(',').map(tag => `<span style="background: var(--border-color); padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px;">${tag.trim()}</span>`).join('') : '';
+                
+                html += `
+                    <div class="transaction-item transaction-${transaction.type}">
+                        <div class="transaction-icon">
+                            <i class="fas fa-${isIncome ? 'arrow-up' : 'arrow-down'}"></i>
+                        </div>
+                        <div class="transaction-info">
+                            <div class="transaction-category">${transaction.category}</div>
+                            <div class="transaction-description">${transaction.description || ''}</div>
+                            <div style="margin-top: 5px;">${tags}</div>
+                            <div class="transaction-date">${formattedDate}</div>
+                        </div>
+                        <div class="transaction-amount">
+                            ${isIncome ? '+' : '-'}${formatCurrency(transaction.amount)} ₽
+                        </div>
+                        <div class="transaction-actions">
+                            <div class="action-icon" onclick="editTransaction(${transaction.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterTransactions() {
+            const typeFilter = document.getElementById('transactionTypeFilter').value;
+            const periodFilter = document.getElementById('transactionPeriodFilter').value;
+            
+            const data = getUserData();
+            let filtered = data.transactions;
+            
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(t => t.type === typeFilter);
+            }
+            
+            if (periodFilter !== 'all') {
+                const now = new Date();
+                let startDate = new Date();
+                
+                switch(periodFilter) {
+                    case 'week': startDate.setDate(now.getDate() - 7); break;
+                    case 'month': startDate.setMonth(now.getMonth() - 1); break;
+                    case 'year': startDate.setFullYear(now.getFullYear() - 1); break;
                 }
-                expenseByCategory[t.category] += t.amount;
-            });
-        
-        Object.entries(expenseByCategory).forEach(([category, amount]) => {
-            expenseStructure.push({
-                category,
-                amount,
-                percentage: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0
-            });
-        });
-        
-        // Последние транзакции
-        const recentTransactions = transactions.slice(0, 5);
-        
-        return {
-            summary: {
-                total_income: totalIncome,
-                total_expenses: totalExpenses,
-                total_investments: totalInvestments,
-                net_income: netIncome,
-                savings_rate: savingsRate,
-                total_transactions: transactions.length
-            },
-            expense_structure: expenseStructure,
-            recent_transactions: recentTransactions,
-            currency: '₽'
-        };
-    }
-    
-    function getFinancialHealthScore(summary) {
-        let score = 50; // Базовый балл
-        
-        // Коэффициент сбережений (0-30 баллов)
-        const savingsRate = summary.summary.savings_rate;
-        if (savingsRate >= 20) score += 30;
-        else if (savingsRate >= 10) score += 20;
-        else if (savingsRate >= 0) score += 10;
-        else score -= 10;
-        
-        // Соотношение расходов к доходам (0-20 баллов)
-        const expenseRatio = summary.summary.total_expenses / Math.max(summary.summary.total_income, 1) * 100;
-        if (expenseRatio <= 70) score += 20;
-        else if (expenseRatio <= 85) score += 10;
-        else if (expenseRatio <= 100) score += 5;
-        else score -= 10;
-        
-        // Наличие целей (0-10 баллов)
-        const data = getUserData();
-        if (data.goals && data.goals.length > 0) score += 10;
-        
-        // Наличие инвестиций (0-10 баллов)
-        if (data.investments && data.investments.length > 0) score += 10;
-        
-        return Math.min(Math.max(score, 0), 100);
-    }
-    
-    function generateAdvice(summary) {
-        const advice = [];
-        
-        if (summary.summary.savings_rate < 10) {
-            advice.push({
-                advice_text: '💡 Попробуйте откладывать минимум 10% от доходов',
-                priority: 2
-            });
-        }
-        
-        if (summary.summary.total_expenses > summary.summary.total_income * 0.8) {
-            advice.push({
-                advice_text: '⚠️ Расходы превышают 80% доходов. Пересмотрите траты',
-                priority: 1
-            });
-        }
-        
-        const data = getUserData();
-        if (data.goals.length === 0) {
-            advice.push({
-                advice_text: '🎯 Создайте финансовую цель для мотивации',
-                priority: 3
-            });
-        }
-        
-        if (data.investments.length === 0 && summary.summary.savings_rate > 10) {
-            advice.push({
-                advice_text: '📈 Рассмотрите возможность инвестирования',
-                priority: 2
-            });
-        }
-        
-        // Добавляем стандартные советы, если своих мало
-        if (advice.length < 3) {
-            advice.push({
-                advice_text: '💰 Ведите учёт всех доходов и расходов',
-                priority: 3
-            });
-            advice.push({
-                advice_text: '📊 Регулярно анализируйте структуру расходов',
-                priority: 2
-            });
-        }
-        
-        return advice.slice(0, 5);
-    }
-    
-    // ====================== UI ОБНОВЛЕНИЯ ======================
-    
-    function updateDashboard() {
-        const data = getUserData();
-        const summary = getFinancialSummary('month');
-        const healthScore = getFinancialHealthScore(summary);
-        
-        // Обновляем баланс
-        document.getElementById('balanceAmount').textContent = 
-            `${data.user.balance.toLocaleString()} ₽`;
-        
-        // Обновляем доходы и расходы
-        document.getElementById('incomeValue').textContent = 
-            `${summary.summary.total_income.toLocaleString()} ₽`;
-        document.getElementById('expenseValue').textContent = 
-            `${summary.summary.total_expenses.toLocaleString()} ₽`;
-        document.getElementById('savingsValue').textContent = 
-            `${summary.summary.savings_rate.toFixed(1)}%`;
-        document.getElementById('investmentValue').textContent = 
-            `${summary.summary.total_investments.toLocaleString()} ₽`;
-        
-        // Обновляем счетчики
-        document.getElementById('incomeCount').textContent = 
-            `${data.transactions.filter(t => t.type === 'income').length} операций`;
-        document.getElementById('expenseCount').textContent = 
-            `${data.transactions.filter(t => t.type === 'expense').length} операций`;
-        document.getElementById('investmentCount').textContent = 
-            `${data.investments.length} активов`;
-        
-        // Обновляем изменение баланса
-        const balanceChange = summary.summary.net_income;
-        const changeElement = document.getElementById('balanceChange');
-        changeElement.textContent = 
-            `${balanceChange >= 0 ? '+' : ''}${balanceChange.toLocaleString()} ₽ за месяц`;
-        changeElement.style.color = balanceChange >= 0 ? '#4CAF50' : '#f44336';
-        
-        // Обновляем финансовое здоровье
-        const scoreElement = document.getElementById('healthScore');
-        const fillElement = document.getElementById('healthFill');
-        const statusElement = document.getElementById('healthStatus');
-        
-        scoreElement.textContent = Math.round(healthScore);
-        fillElement.style.width = `${healthScore}%`;
-        
-        let statusText = '';
-        let healthClass = '';
-        
-        if (healthScore >= 80) {
-            statusText = 'Отличное состояние';
-            healthClass = 'excellent';
-        } else if (healthScore >= 60) {
-            statusText = 'Хорошее состояние';
-            healthClass = 'good';
-        } else {
-            statusText = 'Требует внимания';
-            healthClass = 'poor';
-        }
-        
-        scoreElement.className = `health-score ${healthClass}`;
-        fillElement.className = `health-fill ${healthClass}`;
-        statusElement.textContent = statusText;
-        
-        // Обновляем график расходов
-        updateExpenseChart(summary.expense_structure);
-        
-        // Обновляем последние транзакции
-        updateRecentTransactions(summary.recent_transactions);
-        
-        // Обновляем советы
-        updateAdvice(generateAdvice(summary));
-        
-        // Обновляем время обновления
-        document.getElementById('lastUpdate').textContent = 
-            `Обновлено: ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}`;
-    }
-    
-    function updateRecentTransactions(transactions) {
-        const container = document.getElementById('recentTransactions');
-        
-        if (!transactions || transactions.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exchange-alt"></i>
-                    <div>Нет операций за месяц</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        transactions.slice(0, 5).forEach(transaction => {
-            const isIncome = transaction.type === 'income';
-            const date = new Date(transaction.date);
-            const formattedDate = date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+                
+                filtered = filtered.filter(t => new Date(t.date) >= startDate);
+            }
             
-            html += `
-                <div class="transaction-item transaction-${transaction.type}">
-                    <div class="transaction-icon">
-                        <i class="fas fa-${isIncome ? 'arrow-up' : 'arrow-down'}"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <div class="transaction-category">${transaction.category}</div>
-                        <div class="transaction-description">${transaction.description || ''}</div>
-                        <div class="transaction-date">${formattedDate}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        ${isIncome ? '+' : '-'}${transaction.amount.toLocaleString()} ₽
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-    }
-    
-    function updateAdvice(adviceList) {
-        const container = document.getElementById('adviceContainer');
-        
-        if (!adviceList || adviceList.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-lightbulb"></i>
-                    <div>Добавьте транзакции для получения советов</div>
-                </div>
-            `;
-            return;
+            updateTransactionsListFull(filtered);
         }
         
-        let html = '';
-        adviceList.forEach(advice => {
-            const priorityClass = advice.priority === 1 ? 'high' : advice.priority === 2 ? 'medium' : '';
+        function loadProfile() {
+            const data = getUserData();
+            updateProfileInfo(data.user);
+            updateReferralLink();
+        }
+        
+        function updateProfileInfo(user) {
+            const container = document.getElementById('profileInfo');
             
-            html += `
-                <div class="advice-item ${priorityClass}">
-                    ${advice.advice_text}
+            const html = `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2481cc); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
+                        ${user.full_name ? user.full_name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 18px;">${user.full_name || 'Не указано'}</div>
+                        <div style="font-size: 14px; color: #666;">${initData.user?.username ? '@' + initData.user.username : 'Тестовый пользователь'}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 12px; color: #666;">Основной доход</div>
+                        <div style="font-weight: 600; font-size: 16px;">${user.main_income ? formatCurrency(user.main_income) + ' ₽' : 'Не указан'}</div>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 12px; color: #666;">Текущий баланс</div>
+                        <div style="font-weight: 600; font-size: 16px;">${formatCurrency(user.balance)} ₽</div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 14px; color: #666; text-align: center; margin-top: 15px;">
+                    <i class="fas fa-calendar"></i> Зарегистрирован ${new Date(user.registration_date).toLocaleDateString('ru-RU')}
                 </div>
             `;
-        });
-        
-        container.innerHTML = html;
-    }
-    
-    function updateExpenseChart(expenseStructure) {
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-        
-        if (charts.expenseChart) {
-            charts.expenseChart.destroy();
+            
+            container.innerHTML = html;
         }
         
-        if (!expenseStructure || expenseStructure.length === 0) {
-            // Если нет данных, показываем пустой график
+        // ====================== ГРАФИКИ ======================
+        
+        function updateExpenseChart(expenseStructure) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            if (charts.expenseChart) {
+                charts.expenseChart.destroy();
+            }
+            
+            if (!expenseStructure || expenseStructure.length === 0) {
+                charts.expenseChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Нет данных'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#e0e0e0'],
+                            borderWidth: 2,
+                            borderColor: 'var(--bg-color)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false },
+                            datalabels: { display: false }
+                        },
+                        cutout: '60%'
+                    }
+                });
+                return;
+            }
+            
+            const labels = expenseStructure.map(item => item.category);
+            const data = expenseStructure.map(item => item.amount);
+            const percentages = expenseStructure.map(item => item.percentage);
+            
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                '#9966FF', '#FF9F40', '#C9CBCF', '#77DD77',
+                '#FF6961', '#84B6F4'
+            ];
+            
             charts.expenseChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Нет данных'],
+                    labels: labels,
                     datasets: [{
-                        data: [1],
-                        backgroundColor: ['#e0e0e0'],
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
                         borderWidth: 2,
                         borderColor: 'var(--bg-color)'
                     }]
@@ -1576,832 +3426,175 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false },
-                        datalabels: { display: false }
-                    },
-                    cutout: '60%'
-                }
-            });
-            return;
-        }
-        
-        const labels = expenseStructure.map(item => item.category);
-        const data = expenseStructure.map(item => item.amount);
-        const percentages = expenseStructure.map(item => item.percentage);
-        
-        const colors = [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-            '#9966FF', '#FF9F40', '#C9CBCF', '#77DD77',
-            '#FF6961', '#84B6F4'
-        ];
-        
-        charts.expenseChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderWidth: 2,
-                    borderColor: 'var(--bg-color)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: 'var(--text-color)',
-                            font: { size: 12 },
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const percentage = percentages[context.dataIndex] || 0;
-                                return `${label}: ${value.toLocaleString()} ₽ (${percentage.toFixed(1)}%)`;
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: function() {
+                                    const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d';
+                                    return isDark ? '#ffffff' : '#000000';
+                                },
+                                font: { size: 12 },
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = percentages[context.dataIndex] || 0;
+                                    return `${label}: ${formatCurrency(value)} ₽ (${percentage.toFixed(1)}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: function() {
+                                const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d';
+                                return isDark ? '#ffffff' : '#000000';
+                            },
+                            font: { size: 11, weight: 'bold' },
+                            formatter: (value, ctx) => {
+                                return percentages[ctx.dataIndex]?.toFixed(1) + '%';
                             }
                         }
                     },
-                    datalabels: {
-                        color: 'var(--text-color)',
-                        font: { size: 11, weight: 'bold' },
-                        formatter: (value, ctx) => {
-                            return percentages[ctx.dataIndex]?.toFixed(1) + '%';
-                        }
-                    }
+                    cutout: '60%'
                 },
-                cutout: '60%'
-            },
-            plugins: [ChartDataLabels]
-        });
-    }
-    
-    // ====================== ФУНКЦИИ УПРАВЛЕНИЯ ВКЛАДКАМИ ======================
-    
-    function switchTab(tabName) {
-        // Скрываем все вкладки
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
+                plugins: [ChartDataLabels]
+            });
+        }
         
-        // Убираем активный класс со всех кнопок
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        // ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ======================
         
-        // Показываем выбранную вкладку
-        const tabElement = document.getElementById(tabName + 'Tab');
-        if (tabElement) {
-            tabElement.classList.add('active');
+        function getInvestmentIcon(type) {
+            const icons = {
+                'stock': 'chart-line',
+                'crypto': 'bitcoin',
+                'bond': 'hand-holding-usd',
+                'real_estate': 'home',
+                'other': 'coins'
+            };
+            return icons[type] || 'coins';
+        }
+        
+        function getInvestmentTypeName(type) {
+            const names = {
+                'stock': 'Акции',
+                'crypto': 'Криптовалюта',
+                'bond': 'Облигации',
+                'real_estate': 'Недвижимость',
+                'other': 'Другое'
+            };
+            return names[type] || 'Инвестиция';
+        }
+        
+        function showLoader() {
+            document.getElementById('loader').classList.remove('hidden');
+        }
+        
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+        
+        function showError(message) {
+            if (tg.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+        
+        function showSuccess(message) {
+            if (tg.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+        
+        function showDetailedReport(type) {
+            const summary = getFinancialSummary('month');
+            let reportText = `Отчет по ${type === 'income' ? 'доходам' : 'расходам'}:\n\n`;
             
-            // Находим и активируем соответствующую кнопку
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                if (tab.querySelector('span')?.textContent === getTabTitle(tabName)) {
-                    tab.classList.add('active');
+            if (type === 'income') {
+                reportText += `Всего доходов: ${formatCurrency(summary.summary.total_income)} ₽\n`;
+            } else {
+                reportText += `Всего расходов: ${formatCurrency(summary.summary.total_expenses)} ₽\n\n`;
+                summary.expense_structure.forEach(item => {
+                    reportText += `${item.category}: ${formatCurrency(item.amount)} ₽ (${item.percentage.toFixed(1)}%)\n`;
+                });
+            }
+            
+            showSuccess(reportText);
+        }
+        
+        function loadMoreAdvice() {
+            const summary = getFinancialSummary('month');
+            const advice = generateAdvice(summary);
+            updateAdvice(advice);
+            showSuccess('Советы обновлены!');
+        }
+        
+        function inviteFriend() {
+            showSuccess('Поделитесь реферальной ссылкой из раздела "Реферальная система"');
+        }
+        
+        // ====================== ИНИЦИАЛИЗАЦИЯ ======================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+            updateTheme();
+            
+            tg.onEvent('themeChanged', updateTheme);
+            tg.onEvent('viewportChanged', () => {
+                tg.expand();
+            });
+            
+            setInterval(updateDashboard, 30000);
+        });
+        
+        function updateTheme() {
+            if (tg.themeParams) {
+                document.documentElement.style.setProperty('--bg-color', tg.themeParams.bg_color || '#ffffff');
+                document.documentElement.style.setProperty('--text-color', tg.themeParams.text_color || '#000000');
+                document.documentElement.style.setProperty('--card-bg', tg.themeParams.secondary_bg_color || '#f8f9fa');
+                document.documentElement.style.setProperty('--border-color', tg.themeParams.hint_color || '#e0e0e0');
+                document.documentElement.style.setProperty('--button-color', tg.themeParams.button_color || '#40a7e3');
+                document.documentElement.style.setProperty('--button-text-color', tg.themeParams.button_text_color || '#ffffff');
+            }
+        }
+        
+        // Закрытие модальных окон при клике вне их
+        window.onclick = function(event) {
+            const modals = ['transactionModal', 'goalModal', 'investmentModal', 
+                           'editTransactionModal', 'editGoalModal', 'addToGoalModal',
+                           'editInvestmentModal', 'goalAllocationModal'];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'goalAllocationModal') {
+                        modal.remove();
+                    } else {
+                        modal.style.display = 'none';
+                    }
                 }
             });
-            
-            // Загружаем данные для вкладки
-            loadTabData(tabName);
-        }
-    }
-    
-    function getTabTitle(tabName) {
-        const titles = {
-            'dashboard': 'Дашборд',
-            'transactions': 'Транзакции',
-            'goals': 'Цели',
-            'investments': 'Инвестиции',
-            'profile': 'Профиль'
         };
-        return titles[tabName];
-    }
-    
-    function loadTabData(tabName) {
-        switch(tabName) {
-            case 'dashboard':
-                updateDashboard();
-                break;
-            case 'transactions':
-                loadTransactions();
-                break;
-            case 'goals':
-                loadGoals();
-                break;
-            case 'investments':
-                loadInvestments();
-                break;
-            case 'profile':
-                loadProfile();
-                break;
-        }
-    }
-    
-    // ====================== ФУНКЦИИ МОДАЛЬНЫХ ОКОН ======================
-    
-    function showTransactionModal(type) {
-        currentTransactionType = type;
-        const modal = document.getElementById('transactionModal');
-        const title = document.getElementById('modalTitle');
         
-        title.textContent = type === 'income' ? 'Добавить доход' : 'Добавить расход';
-        loadCategories(type);
-        
-        // Очищаем поля
-        document.getElementById('amountInput').value = '';
-        document.getElementById('descriptionInput').value = '';
-        document.getElementById('tagsInput').value = '';
-        
-        modal.style.display = 'block';
-    }
-    
-    function showGoalModal() {
-        const modal = document.getElementById('goalModal');
-        const dateInput = document.getElementById('goalDeadline');
-        
-        // Устанавливаем минимальную дату (завтра)
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        dateInput.min = tomorrow.toISOString().split('T')[0];
-        
-        // Устанавливаем дату через 3 месяца по умолчанию
-        const inThreeMonths = new Date();
-        inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
-        dateInput.value = inThreeMonths.toISOString().split('T')[0];
-        
-        // Очищаем поля
-        document.getElementById('goalTitle').value = '';
-        document.getElementById('goalAmount').value = '';
-        document.getElementById('goalCategory').value = 'накопления';
-        document.getElementById('goalPriority').value = '1';
-        
-        modal.style.display = 'block';
-    }
-    
-    function showInvestmentModal() {
-        const modal = document.getElementById('investmentModal');
-        
-        // Очищаем поля
-        document.getElementById('investmentType').value = 'stock';
-        document.getElementById('investmentName').value = '';
-        document.getElementById('investmentAmount').value = '';
-        document.getElementById('investmentQuantity').value = '';
-        
-        modal.style.display = 'block';
-    }
-    
-    function closeModal() {
-        document.getElementById('transactionModal').style.display = 'none';
-        document.getElementById('goalModal').style.display = 'none';
-        document.getElementById('investmentModal').style.display = 'none';
-        selectedCategory = '';
-    }
-    
-    // Загрузка категорий
-    function loadCategories(type) {
-        const container = document.getElementById('categoriesContainer');
-        container.innerHTML = '';
-        selectedCategory = '';
-        
-        const data = getUserData();
-        const categories = data.categories.filter(cat => cat.type === type);
-        
-        categories.forEach(cat => {
-            const button = document.createElement('div');
-            button.className = `category-btn ${type}`;
-            button.innerHTML = `${cat.icon} ${cat.name}`;
-            button.onclick = () => {
-                document.querySelectorAll('.category-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                button.classList.add('active');
-                selectedCategory = cat.name;
-            };
-            container.appendChild(button);
-        });
-    }
-    
-    // ====================== ОБРАБОТКА ФОРМ ======================
-    
-    async function submitTransaction() {
-        const amount = parseFloat(document.getElementById('amountInput').value);
-        const description = document.getElementById('descriptionInput').value;
-        const tags = document.getElementById('tagsInput').value;
-        
-        if (!amount || amount <= 0) {
-            showError('Пожалуйста, введите корректную сумму');
-            return;
-        }
-        
-        if (!selectedCategory) {
-            showError('Пожалуйста, выберите категорию');
-            return;
-        }
-        
-        showLoader();
-        
-        const transaction = addTransaction({
-            user_id: userId,
-            amount: amount,
-            category: selectedCategory,
-            type: currentTransactionType,
-            description: description,
-            tags: tags
-        });
-        
-        // Обновляем дашборд
-        setTimeout(() => {
-            updateDashboard();
-            closeModal();
-            hideLoader();
-            showSuccess('Транзакция успешно добавлена!');
-        }, 500);
-    }
-    
-    async function submitGoal() {
-        const title = document.getElementById('goalTitle').value.trim();
-        const amount = parseFloat(document.getElementById('goalAmount').value);
-        const deadline = document.getElementById('goalDeadline').value;
-        const category = document.getElementById('goalCategory').value;
-        const priority = document.getElementById('goalPriority').value;
-        
-        if (!title) {
-            showError('Пожалуйста, введите название цели');
-            return;
-        }
-        
-        if (!amount || amount <= 0) {
-            showError('Пожалуйста, введите корректную сумму');
-            return;
-        }
-        
-        showLoader();
-        
-        const goal = addGoal({
-            user_id: userId,
-            title: title,
-            target_amount: amount,
-            deadline: deadline,
-            category: category,
-            priority: parseInt(priority)
-        });
-        
-        setTimeout(() => {
-            loadGoals();
-            closeModal();
-            hideLoader();
-            showSuccess('Цель успешно создана!');
-        }, 500);
-    }
-    
-    async function submitInvestment() {
-        const assetType = document.getElementById('investmentType').value;
-        const assetName = document.getElementById('investmentName').value.trim();
-        const amount = parseFloat(document.getElementById('investmentAmount').value);
-        const quantity = parseFloat(document.getElementById('investmentQuantity').value) || 1;
-        
-        if (!assetName) {
-            showError('Пожалуйста, введите название актива');
-            return;
-        }
-        
-        if (!amount || amount <= 0) {
-            showError('Пожалуйста, введите корректную сумму');
-            return;
-        }
-        
-        showLoader();
-        
-        const investment = addInvestment({
-            user_id: userId,
-            asset_type: assetType,
-            asset_name: assetName,
-            amount_invested: amount,
-            quantity: quantity
-        });
-        
-        setTimeout(() => {
-            loadInvestments();
-            closeModal();
-            hideLoader();
-            showSuccess('Инвестиция успешно добавлена!');
-        }, 500);
-    }
-    
-    // ====================== ЗАГРУЗКА ДАННЫХ ДЛЯ ВКЛАДОК ======================
-    
-    function loadTransactions() {
-        const data = getUserData();
-        updateTransactionsList(data.transactions);
-    }
-    
-    function filterTransactions() {
-        const typeFilter = document.getElementById('transactionTypeFilter').value;
-        const periodFilter = document.getElementById('transactionPeriodFilter').value;
-        
-        const data = getUserData();
-        let filtered = data.transactions;
-        
-        // Фильтр по типу
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(t => t.type === typeFilter);
-        }
-        
-        // Фильтр по периоду
-        if (periodFilter !== 'all') {
-            const now = new Date();
-            let startDate = new Date();
-            
-            switch(periodFilter) {
-                case 'week':
-                    startDate.setDate(now.getDate() - 7);
-                    break;
-                case 'month':
-                    startDate.setMonth(now.getMonth() - 1);
-                    break;
-                case 'year':
-                    startDate.setFullYear(now.getFullYear() - 1);
-                    break;
-            }
-            
-            filtered = filtered.filter(t => new Date(t.date) >= startDate);
-        }
-        
-        updateTransactionsList(filtered);
-    }
-    
-    function updateTransactionsList(transactions) {
-        const container = document.getElementById('transactionsList');
-        
-        if (!transactions || transactions.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exchange-alt"></i>
-                    <div>Нет операций</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        transactions.forEach(transaction => {
-            const isIncome = transaction.type === 'income';
-            const date = new Date(transaction.date);
-            const formattedDate = date.toLocaleDateString('ru-RU', { 
-                day: '2-digit', 
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const tags = transaction.tags ? 
-                transaction.tags.split(',').map(tag => `<span style="background: var(--border-color); padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px;">${tag.trim()}</span>`).join('') : '';
-            
-            html += `
-                <div class="transaction-item transaction-${transaction.type}">
-                    <div class="transaction-icon">
-                        <i class="fas fa-${isIncome ? 'arrow-up' : 'arrow-down'}"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <div class="transaction-category">${transaction.category}</div>
-                        <div class="transaction-description">${transaction.description || ''}</div>
-                        <div style="margin-top: 5px;">${tags}</div>
-                        <div class="transaction-date">${formattedDate}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        ${isIncome ? '+' : '-'}${transaction.amount.toLocaleString()} ₽
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-    }
-    
-    function loadGoals() {
-        const data = getUserData();
-        const activeGoals = data.goals.filter(g => !g.completed);
-        const completedGoals = data.goals.filter(g => g.completed);
-        
-        updateGoalsList(activeGoals);
-        updateCompletedGoalsList(completedGoals);
-    }
-    
-    function updateGoalsList(goals) {
-        const container = document.getElementById('goalsList');
-        
-        if (!goals || goals.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-bullseye"></i>
-                    <div>У вас пока нет финансовых целей</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        goals.forEach(goal => {
-            const deadline = new Date(goal.deadline);
-            const now = new Date();
-            const daysRemaining = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-            const progressPercentage = goal.current_amount / goal.target_amount * 100;
-            const dailyRequired = daysRemaining > 0 ? 
-                (goal.target_amount - goal.current_amount) / daysRemaining : 0;
-            
-            html += `
-                <div class="goal-item">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 16px;">${goal.title}</div>
-                            <div style="font-size: 14px; color: #666; margin-top: 2px;">
-                                <i class="fas fa-tag"></i> ${goal.category}
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; font-size: 18px;">${goal.current_amount.toLocaleString()} ₽</div>
-                            <div style="font-size: 14px; color: #666;">из ${goal.target_amount.toLocaleString()} ₽</div>
-                        </div>
-                    </div>
-                    
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
-                        </div>
-                        <div class="progress-info">
-                            <span>${progressPercentage.toFixed(1)}%</span>
-                            <span style="color: ${daysRemaining > 0 ? '#666' : '#f44336'}; font-size: 14px;">
-                                ${daysRemaining > 0 ? `⏰ ${daysRemaining} дн. осталось` : '⚠️ Срок истек'}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                        <div style="font-size: 14px; color: #666;">
-                            <i class="fas fa-calendar"></i> Срок: ${goal.deadline}
-                        </div>
-                        <div style="font-size: 14px; color: #666;">
-                            <i class="fas fa-coins"></i> Ежедневно: ${dailyRequired.toFixed(2)} ₽
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-    }
-    
-    function updateCompletedGoalsList(goals) {
-        const container = document.getElementById('completedGoalsList');
-        
-        if (!goals || goals.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-trophy"></i>
-                    <div>Пока нет достигнутых целей</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        goals.forEach(goal => {
-            html += `
-                <div class="goal-item" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), transparent);">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 16px;">${goal.title} <span style="color: #4CAF50;">✓</span></div>
-                            <div style="font-size: 14px; color: #666; margin-top: 2px;">
-                                <i class="fas fa-tag"></i> ${goal.category}
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; font-size: 18px; color: #4CAF50;">${goal.target_amount.toLocaleString()} ₽</div>
-                            <div style="font-size: 14px; color: #666;">Достигнуто!</div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
-                        <div>
-                            <i class="fas fa-calendar"></i> ${goal.deadline}
-                        </div>
-                        <div>
-                            <i class="fas fa-trophy"></i> Завершено: ${goal.completed_at ? new Date(goal.completed_at).toLocaleDateString('ru-RU') : 'Неизвестно'}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-    }
-    
-    function loadInvestments() {
-        const data = getUserData();
-        updateInvestmentsList(data.investments);
-    }
-    
-    function updateInvestmentsList(investments) {
-        const container = document.getElementById('investmentsList');
-        
-        if (!investments || investments.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-chart-line"></i>
-                    <div>У вас пока нет инвестиций</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let totalInvested = 0;
-        let totalCurrent = 0;
-        
-        let html = '';
-        investments.forEach(inv => {
-            const profitLoss = 0; // Для простоты пока 0
-            const roi = 0; // Для простоты пока 0
-            const isPositive = profitLoss >= 0;
-            
-            totalInvested += inv.amount_invested;
-            totalCurrent += inv.current_value || inv.amount_invested;
-            
-            html += `
-                <div class="investment-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 16px;">${inv.asset_name}</div>
-                            <div style="font-size: 14px; color: #666; margin-top: 2px;">
-                                <i class="fas fa-${getInvestmentIcon(inv.asset_type)}"></i> ${getInvestmentTypeName(inv.asset_type)}
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; font-size: 18px;">${(inv.current_value || inv.amount_invested).toLocaleString()} ₽</div>
-                            <div style="font-size: 14px; color: #666;">${inv.quantity} шт.</div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                        <div style="font-size: 14px; color: #666;">
-                            Инвестировано: ${inv.amount_invested.toLocaleString()} ₽
-                        </div>
-                        <div class="performance-badge ${isPositive ? 'positive' : 'negative'}">
-                            ${isPositive ? '📈' : '📉'} ${profitLoss >= 0 ? '+' : ''}${profitLoss.toLocaleString()} ₽ (${roi.toFixed(1)}%)
-                        </div>
-                    </div>
-                    
-                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
-                        <i class="fas fa-calendar"></i> Куплено: ${new Date(inv.purchase_date).toLocaleDateString('ru-RU')}
-                    </div>
-                </div>
-            `;
-        });
-        
-        // Добавляем итоговую статистику
-        const totalProfit = totalCurrent - totalInvested;
-        const totalRoi = totalInvested > 0 ? (totalProfit / totalInvested * 100) : 0;
-        
-        html += `
-            <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
-                <div style="font-weight: 600; margin-bottom: 10px; text-align: center;">Итоговая статистика</div>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: center;">
-                    <div>
-                        <div style="font-size: 12px; color: #666;">Всего инвестировано</div>
-                        <div style="font-weight: 600; font-size: 16px;">${totalInvested.toLocaleString()} ₽</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: #666;">Текущая стоимость</div>
-                        <div style="font-weight: 600; font-size: 16px;">${totalCurrent.toLocaleString()} ₽</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: #666;">Прибыль/убыток</div>
-                        <div style="font-weight: 600; font-size: 16px; color: ${totalProfit >= 0 ? '#4CAF50' : '#f44336'}">
-                            ${totalProfit >= 0 ? '+' : ''}${totalProfit.toLocaleString()} ₽
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: #666;">Доходность (ROI)</div>
-                        <div style="font-weight: 600; font-size: 16px; color: ${totalRoi >= 0 ? '#4CAF50' : '#f44336'}">
-                            ${totalRoi >= 0 ? '+' : ''}${totalRoi.toFixed(1)}%
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        container.innerHTML = html;
-    }
-    
-    function getInvestmentIcon(type) {
-        const icons = {
-            'stock': 'chart-line',
-            'crypto': 'bitcoin',
-            'bond': 'hand-holding-usd',
-            'real_estate': 'home',
-            'other': 'coins'
-        };
-        return icons[type] || 'coins';
-    }
-    
-    function getInvestmentTypeName(type) {
-        const names = {
-            'stock': 'Акции',
-            'crypto': 'Криптовалюта',
-            'bond': 'Облигации',
-            'real_estate': 'Недвижимость',
-            'other': 'Другое'
-        };
-        return names[type] || 'Инвестиция';
-    }
-    
-    function loadProfile() {
-        const data = getUserData();
-        updateProfileInfo(data.user);
-    }
-    
-    function updateProfileInfo(user) {
-        const container = document.getElementById('profileInfo');
-        
-        if (!user) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-user"></i>
-                    <div>Ошибка загрузки профиля</div>
-                </div>
-            `;
-            return;
-        }
-        
-        const html = `
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2481cc); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
-                    ${user.full_name ? user.full_name.charAt(0).toUpperCase() : '?'}
-                </div>
-                <div>
-                    <div style="font-weight: 600; font-size: 18px;">${user.full_name || 'Не указано'}</div>
-                    <div style="font-size: 14px; color: #666;">${initData.user?.username ? '@' + initData.user.username : 'Тестовый пользователь'}</div>
-                </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
-                    <div style="font-size: 12px; color: #666;">Основной доход</div>
-                    <div style="font-weight: 600; font-size: 16px;">${user.main_income ? user.main_income.toLocaleString() + ' ₽' : 'Не указан'}</div>
-                </div>
-                <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
-                    <div style="font-size: 12px; color: #666;">Текущий баланс</div>
-                    <div style="font-weight: 600; font-size: 16px;">${user.balance ? user.balance.toLocaleString() + ' ₽' : '0 ₽'}</div>
-                </div>
-            </div>
-            
-            <div style="font-size: 14px; color: #666; text-align: center; margin-top: 15px;">
-                <i class="fas fa-calendar"></i> Зарегистрирован ${new Date(user.registration_date).toLocaleDateString('ru-RU')}
-            </div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
-                <div style="font-weight: 600; margin-bottom: 10px; color: var(--primary-color);">
-                    <i class="fas fa-info-circle"></i> Информация о тестовом режиме
-                </div>
-                <div style="font-size: 14px; color: #666;">
-                    Все данные сохраняются только в вашем браузере (localStorage).
-                    Для полной функциональности запустите бэкенд сервер.
-                </div>
-            </div>
-        `;
-        
-        container.innerHTML = html;
-    }
-    
-    // ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ======================
-    
-    function showLoader() {
-        document.getElementById('loader').classList.remove('hidden');
-    }
-    
-    function hideLoader() {
-        document.getElementById('loader').classList.add('hidden');
-    }
-    
-    function showError(message) {
-        tg.showAlert ? tg.showAlert(message) : alert(message);
-    }
-    
-    function showSuccess(message) {
-        tg.showAlert ? tg.showAlert(message) : alert(message);
-    }
-    
-    function showDetailedReport(type) {
-        const summary = getFinancialSummary('month');
-        let reportText = `Отчет по ${type === 'income' ? 'доходам' : 'расходам'}:\n\n`;
-        
-        if (type === 'income') {
-            reportText += `Всего доходов: ${summary.summary.total_income.toLocaleString()} ₽\n`;
-        } else {
-            reportText += `Всего расходов: ${summary.summary.total_expenses.toLocaleString()} ₽\n\n`;
-            summary.expense_structure.forEach(item => {
-                reportText += `${item.category}: ${item.amount.toLocaleString()} ₽ (${item.percentage.toFixed(1)}%)\n`;
-            });
-        }
-        
-        tg.showAlert ? tg.showAlert(reportText) : alert(reportText);
-    }
-    
-    function loadMoreAdvice() {
-        const summary = getFinancialSummary('month');
-        const advice = generateAdvice(summary);
-        updateAdvice(advice);
-        showSuccess('Советы обновлены!');
-    }
-    
-    function exportData() {
-        const data = getUserData();
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `finance_data_${userId}_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showSuccess('Данные экспортированы в JSON файл!');
-    }
-    
-    function generateReport() {
-        const data = getUserData();
-        const summary = getFinancialSummary('month');
-        
-        let reportText = `Финансовый отчет\n`;
-        reportText += `Дата: ${new Date().toLocaleDateString('ru-RU')}\n`;
-        reportText += `Пользователь: ${data.user.full_name}\n\n`;
-        reportText += `Баланс: ${data.user.balance.toLocaleString()} ₽\n`;
-        reportText += `Доходы за месяц: ${summary.summary.total_income.toLocaleString()} ₽\n`;
-        reportText += `Расходы за месяц: ${summary.summary.total_expenses.toLocaleString()} ₽\n`;
-        reportText += `Чистый доход: ${summary.summary.net_income.toLocaleString()} ₽\n`;
-        reportText += `Норма сбережений: ${summary.summary.savings_rate.toFixed(1)}%\n\n`;
-        reportText += `Целей: ${data.goals.filter(g => !g.completed).length} активных\n`;
-        reportText += `Инвестиций: ${data.investments.length}\n`;
-        reportText += `Транзакций: ${data.transactions.length}\n`;
-        
-        tg.showAlert ? tg.showAlert(reportText) : alert(reportText);
-    }
-    
-    function inviteFriend() {
-        tg.showAlert ? tg.showAlert('В тестовом режиме функция приглашения отключена.') 
-                     : alert('В тестовом режиме функция приглашения отключена.');
-    }
-    
-    // ====================== ИНИЦИАЛИЗАЦИЯ ======================
-    
-    document.addEventListener('DOMContentLoaded', async () => {
-        showLoader();
-        
-        // Загружаем начальные данные
-        updateDashboard();
-        
-        // Настройка темы Telegram
-        updateTheme();
-        
-        tg.onEvent('themeChanged', updateTheme);
-        tg.onEvent('viewportChanged', () => {
-            tg.expand();
-        });
-        
-        // Автообновление данных каждые 30 секунд
-        setInterval(updateDashboard, 30000);
-        
-        hideLoader();
-    });
-    
-    function updateTheme() {
-        if (tg.themeParams) {
-            document.documentElement.style.setProperty('--bg-color', tg.themeParams.bg_color || '#ffffff');
-            document.documentElement.style.setProperty('--text-color', tg.themeParams.text_color || '#000000');
-            document.documentElement.style.setProperty('--card-bg', tg.themeParams.secondary_bg_color || '#f8f9fa');
-            document.documentElement.style.setProperty('--border-color', tg.themeParams.hint_color || '#e0e0e0');
-            document.documentElement.style.setProperty('--button-color', tg.themeParams.button_color || '#40a7e3');
-            document.documentElement.style.setProperty('--button-text-color', tg.themeParams.button_text_color || '#ffffff');
-        }
-    }
-    
-    // Закрытие модальных окон при клике вне их
-    window.onclick = function(event) {
-        const modals = ['transactionModal', 'goalModal', 'investmentModal'];
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeEditModal();
+                closeEditGoalModal();
+                closeAddToGoalModal();
+                closeEditInvestmentModal();
+                const allocationModal = document.getElementById('goalAllocationModal');
+                if (allocationModal) allocationModal.remove();
             }
         });
-    }
-</script>
+    </script>
 </body>
 </html>
