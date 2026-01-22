@@ -22,6 +22,7 @@
             --border-color: var(--tg-theme-hint-color, #e0e0e0);
             --button-color: var(--tg-theme-button-color, #40a7e3);
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --transaction-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
         }
         
         * {
@@ -266,7 +267,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: var(--bg-color);
+            background: var(--transaction-bg);
             border-radius: 12px;
             margin-bottom: 8px;
             border-left: 5px solid;
@@ -278,11 +279,11 @@
         
         .transaction-income { 
             border-left-color: var(--income-color);
-            background: linear-gradient(90deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.15) 0%, var(--transaction-bg) 100%);
         }
         .transaction-expense { 
             border-left-color: var(--expense-color);
-            background: linear-gradient(90deg, rgba(244, 67, 54, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(244, 67, 54, 0.15) 0%, var(--transaction-bg) 100%);
         }
         
         .transaction-icon {
@@ -314,17 +315,20 @@
         .transaction-category {
             font-weight: 600;
             margin-bottom: 3px;
+            color: var(--text-color);
         }
         
         .transaction-description {
             font-size: 14px;
-            color: var(--tg-theme-hint-color, #666);
+            color: var(--text-color);
+            opacity: 0.8;
             margin-bottom: 3px;
         }
         
         .transaction-date {
             font-size: 12px;
-            color: var(--tg-theme-hint-color, #999);
+            color: var(--text-color);
+            opacity: 0.6;
         }
         
         .transaction-amount {
@@ -417,7 +421,8 @@
             display: flex;
             justify-content: space-between;
             font-size: 14px;
-            color: var(--tg-theme-hint-color, #666);
+            color: var(--text-color);
+            opacity: 0.7;
         }
         
         .goal-actions {
@@ -991,6 +996,43 @@
         .tab-content.active {
             animation: fadeInUp 0.3s ease;
         }
+        
+        .success-check {
+            display: inline-block;
+            margin-right: 8px;
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--income-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOut 2s ease;
+            max-width: 90%;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
     </style>
 </head>
 <body>
@@ -1080,7 +1122,7 @@
                 <div id="adviceContainer">
                     <div class="empty-state">
                         <i class="fas fa-lightbulb"></i>
-                        <div>Добавьте транзакции для получения советов</div>
+                        <div>Добавьте транзакции для получения совета</div>
                     </div>
                 </div>
             </div>
@@ -1222,29 +1264,6 @@
             
             <div class="section">
                 <div class="section-title">
-                    <span><i class="fas fa-users"></i> Реферальная система</span>
-                </div>
-                <div id="referralSection">
-                    <div class="referral-link">
-                        <div style="font-weight: 600; margin-bottom: 10px;">Ваша реферальная ссылка:</div>
-                        <input type="text" id="referralLink" readonly value="Загрузка...">
-                        <button class="copy-btn" onclick="copyReferralLink()">Копировать</button>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
-                        <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 12px; color: #666;">Приглашено</div>
-                            <div style="font-weight: 600; font-size: 18px;" id="referralCount">0</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 12px; color: #666;">Бонусы</div>
-                            <div style="font-weight: 600; font-size: 18px;" id="referralBonus">0 ₽</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
                     <span><i class="fas fa-file-alt"></i> Экспорт данных</span>
                 </div>
                 <div class="report-options">
@@ -1272,7 +1291,7 @@
                     <span><i class="fas fa-cog"></i> Настройки</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-primary" onclick="inviteFriend()">
+                    <button class="btn btn-primary" onclick="showReferralModal()">
                         <i class="fas fa-user-plus"></i> Пригласить друга
                     </button>
                     <button class="btn" onclick="clearAllData()">
@@ -1317,7 +1336,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="amountInput" class="form-input formatted" placeholder="1 000" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1360,7 +1380,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="editAmountInput" class="form-input formatted" placeholder="1 000" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1421,7 +1442,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="goalAmount" class="form-input formatted" placeholder="500 000" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1477,7 +1499,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="editGoalCurrentAmount" class="form-input formatted" placeholder="0" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1486,7 +1509,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="editGoalTargetAmount" class="form-input formatted" placeholder="500 000" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1536,7 +1560,8 @@
                 <div class="formatted-input-container">
                     <span class="currency-symbol">₽</span>
                     <input type="text" id="addToGoalAmount" class="form-input formatted" placeholder="1 000" 
-                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)">
+                           oninput="formatCurrencyInput(this)" onblur="validateCurrencyInput(this)"
+                           inputmode="decimal" pattern="[0-9]*">
                 </div>
             </div>
             
@@ -1584,7 +1609,7 @@
                         <span class="currency-symbol">₽</span>
                         <input type="text" id="investmentPrice" class="form-input formatted" placeholder="1 000" 
                                oninput="formatCurrencyInput(this); calculateInvestmentTotal();" 
-                               onblur="validateCurrencyInput(this)">
+                               onblur="validateCurrencyInput(this)" inputmode="decimal" pattern="[0-9]*">
                     </div>
                     <div class="unit">₽</div>
                 </div>
@@ -1593,7 +1618,7 @@
             <div class="form-group">
                 <label class="form-label">Количество</label>
                 <div class="input-group">
-                    <input type="number" id="investmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateInvestmentTotal()">
+                    <input type="number" id="investmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateInvestmentTotal()" inputmode="decimal">
                     <div class="unit">шт.</div>
                 </div>
             </div>
@@ -1643,7 +1668,7 @@
                         <span class="currency-symbol">₽</span>
                         <input type="text" id="editInvestmentPrice" class="form-input formatted" placeholder="1 000" 
                                oninput="formatCurrencyInput(this); calculateEditInvestmentTotal();" 
-                               onblur="validateCurrencyInput(this)">
+                               onblur="validateCurrencyInput(this)" inputmode="decimal" pattern="[0-9]*">
                     </div>
                     <div class="unit">₽</div>
                 </div>
@@ -1652,7 +1677,7 @@
             <div class="form-group">
                 <label class="form-label">Количество</label>
                 <div class="input-group">
-                    <input type="number" id="editInvestmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateEditInvestmentTotal()">
+                    <input type="number" id="editInvestmentQuantity" class="form-input" placeholder="1" min="0.000001" step="0.000001" oninput="calculateEditInvestmentTotal()" inputmode="decimal">
                     <div class="unit">шт.</div>
                 </div>
             </div>
@@ -1664,7 +1689,7 @@
                         <span class="currency-symbol">₽</span>
                         <input type="text" id="editInvestmentCurrentPrice" class="form-input formatted" placeholder="1 000" 
                                oninput="formatCurrencyInput(this); calculateEditInvestmentProfit();" 
-                               onblur="validateCurrencyInput(this)">
+                               onblur="validateCurrencyInput(this)" inputmode="decimal" pattern="[0-9]*">
                     </div>
                     <div class="unit">₽</div>
                 </div>
@@ -1698,6 +1723,45 @@
             
             <button class="btn" onclick="closeEditInvestmentModal()" style="margin-top: 10px;">
                 <i class="fas fa-times"></i> Отмена
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модалка реферальной системы -->
+    <div id="referralModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-users"></i> Реферальная система</h2>
+            
+            <div class="form-group">
+                <p style="margin-bottom: 15px; color: var(--text-color); opacity: 0.8;">
+                    Приглашайте друзей и получайте бонусы за каждого приглашенного!
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ваша реферальная ссылка</label>
+                <div class="referral-link">
+                    <input type="text" id="referralLinkInput" readonly value="Загрузка...">
+                    <button class="copy-btn" onclick="copyReferralLink()">Копировать</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Статистика</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Приглашено</div>
+                        <div style="font-weight: 600; font-size: 18px;" id="referralCountModal">0</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Бонусы</div>
+                        <div style="font-weight: 600; font-size: 18px;" id="referralBonusModal">0 ₽</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="closeReferralModal()">
+                <i class="fas fa-check"></i> Понятно
             </button>
         </div>
     </div>
@@ -1841,7 +1905,7 @@
             }
             
             // Обновляем реферальную ссылку
-            updateReferralLink();
+            updateReferralModal();
         }
         
         function getUserData() {
@@ -1867,12 +1931,36 @@
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
         
-        function updateReferralLink() {
+        function updateReferralModal() {
             const data = getUserData();
             const referralLink = `https://t.me/your_bot_username?start=ref_${data.user.referral_code}`;
-            document.getElementById('referralLink').value = referralLink;
-            document.getElementById('referralCount').textContent = data.user.referral_count;
-            document.getElementById('referralBonus').textContent = formatCurrency(data.user.referral_bonus) + ' ₽';
+            document.getElementById('referralLinkInput').value = referralLink;
+            document.getElementById('referralCountModal').textContent = data.user.referral_count;
+            document.getElementById('referralBonusModal').textContent = formatCurrency(data.user.referral_bonus) + ' ₽';
+        }
+        
+        // ====================== УВЕДОМЛЕНИЯ ======================
+        
+        function showSuccessNotification(message) {
+            // Удаляем предыдущее уведомление если есть
+            const existingNotification = document.querySelector('.success-message');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Создаем новое уведомление
+            const notification = document.createElement('div');
+            notification.className = 'success-message';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle success-check"></i> ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Автоматически удаляем через 2 секунды
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
         }
         
         // ====================== ОСНОВНЫЕ ФУНКЦИИ ======================
@@ -2501,7 +2589,7 @@
             closeEditModal();
             updateDashboard();
             loadTransactions();
-            showSuccess('Транзакция обновлена!');
+            showSuccessNotification('Транзакция обновлена!');
         }
         
         function deleteTransaction() {
@@ -2512,7 +2600,7 @@
                 closeEditModal();
                 updateDashboard();
                 loadTransactions();
-                showSuccess('Транзакция удалена!');
+                showSuccessNotification('Транзакция удалена!');
             }
         }
         
@@ -2592,7 +2680,7 @@
             closeEditGoalModal();
             updateDashboard();
             loadGoals();
-            showSuccess('Цель обновлена!');
+            showSuccessNotification('Цель обновлена!');
         }
         
         function deleteGoal() {
@@ -2603,7 +2691,7 @@
                 closeEditGoalModal();
                 updateDashboard();
                 loadGoals();
-                showSuccess('Цель удалена!');
+                showSuccessNotification('Цель удалена!');
             }
         }
         
@@ -2641,7 +2729,7 @@
                 closeAddToGoalModal();
                 updateDashboard();
                 loadGoals();
-                showSuccess(`Цель пополнена на ${formatCurrency(amount)} ₽!`);
+                showSuccessNotification(`Цель пополнена на ${formatCurrency(amount)} ₽!`);
             }
         }
         
@@ -2685,13 +2773,13 @@
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 16px;">${goal.title}</div>
-                                <div style="font-size: 14px; color: #666; margin-top: 2px;">
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 2px;">
                                     <i class="fas fa-tag"></i> ${goal.category}
                                 </div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-weight: 600; font-size: 18px;">${formatCurrency(goal.current_amount)} ₽</div>
-                                <div style="font-size: 14px; color: #666;">из ${formatCurrency(goal.target_amount)} ₽</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">из ${formatCurrency(goal.target_amount)} ₽</div>
                             </div>
                         </div>
                         
@@ -2701,17 +2789,17 @@
                             </div>
                             <div class="progress-info">
                                 <span>${progressPercentage.toFixed(1)}%</span>
-                                <span style="color: ${daysRemaining > 0 ? '#666' : '#f44336'}; font-size: 14px;">
+                                <span style="color: ${daysRemaining > 0 ? 'var(--text-color)' : '#f44336'}; opacity: 0.7; font-size: 14px;">
                                     ${daysRemaining > 0 ? `⏰ ${daysRemaining} дн. осталось` : '⚠️ Срок истек'}
                                 </span>
                             </div>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                            <div style="font-size: 14px; color: #666;">
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
                                 <i class="fas fa-calendar"></i> Срок: ${goal.deadline}
                             </div>
-                            <div style="font-size: 14px; color: #666;">
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
                                 <i class="fas fa-coins"></i> Ежедневно: ${formatCurrency(dailyRequired)} ₽
                             </div>
                         </div>
@@ -2825,7 +2913,7 @@
             closeEditInvestmentModal();
             updateDashboard();
             loadInvestments();
-            showSuccess('Инвестиция обновлена!');
+            showSuccessNotification('Инвестиция обновлена!');
         }
         
         function deleteInvestment() {
@@ -2836,7 +2924,7 @@
                 closeEditInvestmentModal();
                 updateDashboard();
                 loadInvestments();
-                showSuccess('Инвестиция удалена! Средства возвращены на баланс.');
+                showSuccessNotification('Инвестиция удалена! Средства возвращены на баланс.');
             }
         }
         
@@ -2892,18 +2980,18 @@
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 16px;">${inv.asset_name}</div>
-                                <div style="font-size: 14px; color: #666; margin-top: 2px;">
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 2px;">
                                     <i class="fas fa-${getInvestmentIcon(inv.asset_type)}"></i> ${getInvestmentTypeName(inv.asset_type)}
                                 </div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-weight: 600; font-size: 18px;">${formatCurrency(inv.current_value || inv.amount_invested)} ₽</div>
-                                <div style="font-size: 14px; color: #666;">${inv.quantity} шт.</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">${inv.quantity} шт.</div>
                             </div>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                            <div style="font-size: 14px; color: #666;">
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
                                 Цена: ${formatCurrency(inv.price_per_unit || (inv.amount_invested / inv.quantity))} ₽
                             </div>
                             <div class="performance-badge ${isPositive ? 'positive' : 'negative'}">
@@ -2911,7 +2999,7 @@
                             </div>
                         </div>
                         
-                        <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                        <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 5px;">
                             <i class="fas fa-calendar"></i> Куплено: ${new Date(inv.purchase_date).toLocaleDateString('ru-RU')}
                         </div>
                     </div>
@@ -2923,24 +3011,24 @@
             
             html += `
                 <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
-                    <div style="font-weight: 600; margin-bottom: 10px; text-align: center;">Итоговая статистика</div>
+                    <div style="font-weight: 600; margin-bottom: 10px; text-align: center; color: var(--text-color);">Итоговая статистика</div>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: center;">
                         <div>
-                            <div style="font-size: 12px; color: #666;">Всего инвестировано</div>
-                            <div style="font-weight: 600; font-size: 16px;">${formatCurrency(totalInvested)} ₽</div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Всего инвестировано</div>
+                            <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(totalInvested)} ₽</div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #666;">Текущая стоимость</div>
-                            <div style="font-weight: 600; font-size: 16px;">${formatCurrency(totalCurrent)} ₽</div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Текущая стоимость</div>
+                            <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(totalCurrent)} ₽</div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #666;">Прибыль/убыток</div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Прибыль/убыток</div>
                             <div style="font-weight: 600; font-size: 16px; color: ${totalProfit >= 0 ? '#4CAF50' : '#f44336'}">
                                 ${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit)} ₽
                             </div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #666;">Доходность (ROI)</div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Доходность (ROI)</div>
                             <div style="font-weight: 600; font-size: 16px; color: ${totalRoi >= 0 ? '#4CAF50' : '#f44336'}">
                                 ${totalRoi >= 0 ? '+' : ''}${totalRoi.toFixed(1)}%
                             </div>
@@ -2952,14 +3040,25 @@
             container.innerHTML = html;
         }
         
-        // ====================== РЕФЕРАЛЬНАЯ СИСТЕМА И ОТЧЕТЫ ======================
+        // ====================== РЕФЕРАЛЬНАЯ СИСТЕМА ======================
+        
+        function showReferralModal() {
+            updateReferralModal();
+            document.getElementById('referralModal').style.display = 'block';
+        }
+        
+        function closeReferralModal() {
+            document.getElementById('referralModal').style.display = 'none';
+        }
         
         function copyReferralLink() {
-            const input = document.getElementById('referralLink');
+            const input = document.getElementById('referralLinkInput');
             input.select();
             document.execCommand('copy');
-            showSuccess('Ссылка скопирована в буфер обмена!');
+            showSuccessNotification('Ссылка скопирована в буфер обмена!');
         }
+        
+        // ====================== ОТЧЕТЫ ======================
         
         function generateReport(type) {
             const data = getUserData();
@@ -2992,7 +3091,9 @@
             reportText += `Доходов: ${data.transactions.filter(t => t.type === 'income').length}\n`;
             reportText += `Расходов: ${data.transactions.filter(t => t.type === 'expense').length}\n`;
             
-            showSuccess(reportText);
+            showSuccessNotification('Отчет сформирован!');
+            // В реальном приложении можно отправить в Telegram или сохранить как файл
+            console.log(reportText);
         }
         
         function exportToCSV() {
@@ -3013,7 +3114,7 @@
             link.download = `transactions_${userId}_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
             
-            showSuccess('Данные экспортированы в CSV!');
+            showSuccessNotification('Данные экспортированы в CSV!');
         }
         
         function exportToExcel() {
@@ -3071,7 +3172,7 @@
             link.download = `finance_report_${userId}_${new Date().toISOString().split('T')[0]}.xls`;
             link.click();
             
-            showSuccess('Отчет экспортирован в Excel!');
+            showSuccessNotification('Отчет экспортирован в Excel!');
         }
         
         function clearAllData() {
@@ -3084,7 +3185,7 @@
                 loadGoals();
                 loadInvestments();
                 loadProfile();
-                showSuccess('Все данные очищены!');
+                showSuccessNotification('Все данные очищены!');
             }
         }
         
@@ -3163,7 +3264,7 @@
             
             updateDashboard();
             closeModal();
-            showSuccess('Транзакция успешно добавлена!');
+            showSuccessNotification('Транзакция успешно добавлена!');
         }
         
         function submitGoal() {
@@ -3194,7 +3295,7 @@
             
             loadGoals();
             closeModal();
-            showSuccess('Цель успешно создана!');
+            showSuccessNotification('Цель успешно создана!');
         }
         
         function submitInvestment() {
@@ -3231,7 +3332,7 @@
             loadInvestments();
             updateDashboard();
             closeModal();
-            showSuccess('Инвестиция успешно добавлена!');
+            showSuccessNotification('Инвестиция успешно добавлена!');
         }
         
         function closeModal() {
@@ -3272,7 +3373,7 @@
                 });
                 
                 const tags = transaction.tags ? 
-                    transaction.tags.split(',').map(tag => `<span style="background: var(--border-color); padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px;">${tag.trim()}</span>`).join('') : '';
+                    transaction.tags.split(',').map(tag => `<span style="background: var(--border-color); padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px; color: var(--text-color);">${tag.trim()}</span>`).join('') : '';
                 
                 html += `
                     <div class="transaction-item transaction-${transaction.type}">
@@ -3330,7 +3431,6 @@
         function loadProfile() {
             const data = getUserData();
             updateProfileInfo(data.user);
-            updateReferralLink();
         }
         
         function updateProfileInfo(user) {
@@ -3342,23 +3442,23 @@
                         ${user.full_name ? user.full_name.charAt(0).toUpperCase() : '?'}
                     </div>
                     <div>
-                        <div style="font-weight: 600; font-size: 18px;">${user.full_name || 'Не указано'}</div>
-                        <div style="font-size: 14px; color: #666;">${initData.user?.username ? '@' + initData.user.username : 'Тестовый пользователь'}</div>
+                        <div style="font-weight: 600; font-size: 18px; color: var(--text-color);">${user.full_name || 'Не указано'}</div>
+                        <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">${initData.user?.username ? '@' + initData.user.username : 'Тестовый пользователь'}</div>
                     </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
                     <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 12px; color: #666;">Основной доход</div>
-                        <div style="font-weight: 600; font-size: 16px;">${user.main_income ? formatCurrency(user.main_income) + ' ₽' : 'Не указан'}</div>
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Основной доход</div>
+                        <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${user.main_income ? formatCurrency(user.main_income) + ' ₽' : 'Не указан'}</div>
                     </div>
                     <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 12px; color: #666;">Текущий баланс</div>
-                        <div style="font-weight: 600; font-size: 16px;">${formatCurrency(user.balance)} ₽</div>
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Текущий баланс</div>
+                        <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(user.balance)} ₽</div>
                     </div>
                 </div>
                 
-                <div style="font-size: 14px; color: #666; text-align: center; margin-top: 15px;">
+                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; text-align: center; margin-top: 15px;">
                     <i class="fas fa-calendar"></i> Зарегистрирован ${new Date(user.registration_date).toLocaleDateString('ru-RU')}
                 </div>
             `;
@@ -3405,10 +3505,11 @@
             const data = expenseStructure.map(item => item.amount);
             const percentages = expenseStructure.map(item => item.percentage);
             
+            // Светлые цвета для диаграммы
             const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                '#9966FF', '#FF9F40', '#C9CBCF', '#77DD77',
-                '#FF6961', '#84B6F4'
+                '#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB',
+                '#B5EAD7', '#C7CEEA', '#D8E2DC', '#FFE5D9',
+                '#FFD6E0', '#C9E4DE'
             ];
             
             charts.expenseChart = new Chart(ctx, {
@@ -3430,8 +3531,7 @@
                             position: 'right',
                             labels: {
                                 color: function() {
-                                    const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d';
-                                    return isDark ? '#ffffff' : '#000000';
+                                    return getTextColor();
                                 },
                                 font: { size: 12 },
                                 padding: 20,
@@ -3449,9 +3549,9 @@
                             }
                         },
                         datalabels: {
-                            color: function() {
-                                const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d';
-                                return isDark ? '#ffffff' : '#000000';
+                            color: function(context) {
+                                // Темный текст на светлом фоне
+                                return '#000000';
                             },
                             font: { size: 11, weight: 'bold' },
                             formatter: (value, ctx) => {
@@ -3487,6 +3587,13 @@
                 'other': 'Другое'
             };
             return names[type] || 'Инвестиция';
+        }
+        
+        function getTextColor() {
+            const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d' || 
+                          document.documentElement.style.getPropertyValue('--bg-color') === '#000000' ||
+                          document.documentElement.style.getPropertyValue('--bg-color') === '#0f0f0f';
+            return isDark ? '#ffffff' : '#000000';
         }
         
         function showLoader() {
@@ -3533,11 +3640,36 @@
             const summary = getFinancialSummary('month');
             const advice = generateAdvice(summary);
             updateAdvice(advice);
-            showSuccess('Советы обновлены!');
+            showSuccessNotification('Советы обновлены!');
         }
         
-        function inviteFriend() {
-            showSuccess('Поделитесь реферальной ссылкой из раздела "Реферальная система"');
+        function updateAdvice(advice) {
+            const container = document.getElementById('adviceContainer');
+            
+            if (!advice || advice.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>Добавьте транзакции для получения советов</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            advice.forEach(item => {
+                const priorityClass = item.priority === 1 ? 'high' : item.priority === 2 ? 'medium' : '';
+                html += `
+                    <div class="advice-item ${priorityClass}">
+                        <div style="font-weight: 600; margin-bottom: 5px; color: var(--text-color);">${item.advice_text}</div>
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
+                            ${item.priority === 1 ? 'Высокий приоритет' : item.priority === 2 ? 'Средний приоритет' : 'Низкий приоритет'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
         }
         
         // ====================== ИНИЦИАЛИЗАЦИЯ ======================
@@ -3562,6 +3694,7 @@
                 document.documentElement.style.setProperty('--border-color', tg.themeParams.hint_color || '#e0e0e0');
                 document.documentElement.style.setProperty('--button-color', tg.themeParams.button_color || '#40a7e3');
                 document.documentElement.style.setProperty('--button-text-color', tg.themeParams.button_text_color || '#ffffff');
+                document.documentElement.style.setProperty('--transaction-bg', tg.themeParams.secondary_bg_color || '#f8f9fa');
             }
         }
         
@@ -3569,7 +3702,7 @@
         window.onclick = function(event) {
             const modals = ['transactionModal', 'goalModal', 'investmentModal', 
                            'editTransactionModal', 'editGoalModal', 'addToGoalModal',
-                           'editInvestmentModal', 'goalAllocationModal'];
+                           'editInvestmentModal', 'goalAllocationModal', 'referralModal'];
             
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
@@ -3591,6 +3724,7 @@
                 closeEditGoalModal();
                 closeAddToGoalModal();
                 closeEditInvestmentModal();
+                closeReferralModal();
                 const allocationModal = document.getElementById('goalAllocationModal');
                 if (allocationModal) allocationModal.remove();
             }
