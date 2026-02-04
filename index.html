@@ -22,6 +22,7 @@
             --border-color: var(--tg-theme-hint-color, #e0e0e0);
             --button-color: var(--tg-theme-button-color, #40a7e3);
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --transaction-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
         }
         
         * {
@@ -42,7 +43,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            padding: 16px 16px 100px;
+            padding: 16px 16px 80px;
             max-width: 100%;
             overflow-x: hidden;
             line-height: 1.6;
@@ -266,7 +267,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: var(--bg-color);
+            background: var(--transaction-bg);
             border-radius: 12px;
             margin-bottom: 8px;
             border-left: 5px solid;
@@ -278,11 +279,11 @@
         
         .transaction-income { 
             border-left-color: var(--income-color);
-            background: linear-gradient(90deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.15) 0%, var(--transaction-bg) 100%);
         }
         .transaction-expense { 
             border-left-color: var(--expense-color);
-            background: linear-gradient(90deg, rgba(244, 67, 54, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(244, 67, 54, 0.15) 0%, var(--transaction-bg) 100%);
         }
         
         .transaction-icon {
@@ -958,67 +959,6 @@
             color: var(--primary-color);
         }
         
-        .success-message {
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            z-index: 9999;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeInOut 2s ease;
-            max-width: 90%;
-        }
-        
-        .success-check {
-            display: inline-block;
-            margin-right: 8px;
-            animation: bounce 0.5s ease;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 60%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            80% { transform: translateY(-5px); }
-        }
-        
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-        }
-        
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        
-        .detail-table th {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 2px solid var(--border-color);
-            font-weight: 600;
-            color: var(--text-color);
-        }
-        
-        .detail-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-color);
-        }
-        
-        .detail-table tr:hover {
-            background: rgba(0,0,0,0.02);
-        }
-        
         @media (max-width: 480px) {
             .container { padding: 0 10px; padding-top: 60px; }
             .balance-amount { font-size: 36px; }
@@ -1055,6 +995,43 @@
         
         .tab-content.active {
             animation: fadeInUp 0.3s ease;
+        }
+        
+        .success-check {
+            display: inline-block;
+            margin-right: 8px;
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--income-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOut 2s ease;
+            max-width: 90%;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
     </style>
 </head>
@@ -1130,12 +1107,7 @@
             <div class="section">
                 <div class="section-title">
                     <span><i class="fas fa-chart-pie"></i> Структура расходов</span>
-                    <div>
-                        <span class="see-all" onclick="showExpenseDetail()" style="margin-right: 10px;">Детализация →</span>
-                        <span class="see-all" onclick="toggleChartSettings()">
-                            <i class="fas fa-cog"></i> Настроить
-                        </span>
-                    </div>
+                    <span class="see-all" onclick="showDetailedReport('expense')">Подробнее →</span>
                 </div>
                 <div class="chart-container">
                     <canvas id="expenseChart"></canvas>
@@ -1144,23 +1116,13 @@
             
             <div class="section">
                 <div class="section-title">
-                    <span><i class="fas fa-chart-line"></i> Динамика баланса (30 дней)</span>
-                    <span class="see-all" onclick="showBalanceHistory()">Подробнее →</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="balanceChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">
-                    <span><i class="fas fa-lightbulb"></i> Умные советы</span>
-                    <span class="see-all" onclick="loadMoreAdvice()">Обновить</span>
+                    <span><i class="fas fa-lightbulb"></i> Персональные советы</span>
+                    <span class="see-all" onclick="loadMoreAdvice()">Еще →</span>
                 </div>
                 <div id="adviceContainer">
                     <div class="empty-state">
                         <i class="fas fa-lightbulb"></i>
-                        <div>Добавьте транзакции для получения советов</div>
+                        <div>Добавьте транзакции для получения совета</div>
                     </div>
                 </div>
             </div>
@@ -1765,37 +1727,6 @@
         </div>
     </div>
     
-    <!-- Модалка настроек диаграммы -->
-    <div id="chartSettingsModal" class="modal">
-        <div class="modal-content">
-            <h2><i class="fas fa-sliders-h"></i> Настройка диаграммы</h2>
-            <div id="chartSettingsContent">
-                <!-- Чекбоксы для категорий будут здесь -->
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="applyChartSettings()" style="flex: 2;">
-                    <i class="fas fa-check"></i> Применить
-                </button>
-                <button class="btn" onclick="closeChartSettings()" style="flex: 1;">
-                    <i class="fas fa-times"></i> Отмена
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Модалка детализации расходов -->
-    <div id="expenseDetailModal" class="modal">
-        <div class="modal-content">
-            <h2><i class="fas fa-list-alt"></i> Детализация расходов</h2>
-            <div id="expenseDetailContent">
-                <!-- Таблица будет сгенерирована здесь -->
-            </div>
-            <button class="btn btn-primary" onclick="closeExpenseDetailModal()" style="margin-top: 20px;">
-                <i class="fas fa-times"></i> Закрыть
-            </button>
-        </div>
-    </div>
-    
     <!-- Модалка реферальной системы -->
     <div id="referralModal" class="modal">
         <div class="modal-content">
@@ -1849,7 +1780,6 @@
         let selectedCategory = '';
         let charts = {};
         let dashboardData = null;
-        let visibleCategories = {}; // Для настроек диаграммы
         
         // Инициализация
         tg.expand();
@@ -1924,40 +1854,6 @@
             }
         }
         
-        // ====================== УВЕДОМЛЕНИЯ ======================
-        
-        function showNotification(message, type = 'success') {
-            // Определяем цвет и иконку
-            const colors = {
-                success: '#4CAF50',
-                error: '#f44336',
-                warning: '#FF9800',
-                info: '#2196F3'
-            };
-            
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                warning: 'fa-exclamation-triangle',
-                info: 'fa-info-circle'
-            };
-            
-            // Создаем новое уведомление
-            const notification = document.createElement('div');
-            notification.className = 'success-message';
-            notification.style.background = colors[type] || colors.success;
-            notification.innerHTML = `
-                <i class="fas ${icons[type]} success-check"></i> ${message}
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Автоматически удаляем через 2 секунды
-            setTimeout(() => {
-                notification.remove();
-            }, 2000);
-        }
-        
         // ====================== ФУНКЦИИ LOCALSTORAGE ======================
         
         function initUserData() {
@@ -1982,7 +1878,6 @@
                     transactions: [],
                     goals: [],
                     investments: [],
-                    daily_snapshots: [], // Для истории баланса
                     categories: [
                         { user_id: userId, name: 'зарплата', type: 'income', color: '#4CAF50', icon: '💰' },
                         { user_id: userId, name: 'подработка', type: 'income', color: '#2196F3', icon: '💼' },
@@ -2009,8 +1904,8 @@
                 localStorage.setItem(userDataKey, JSON.stringify(initialData));
             }
             
-            // Сохраняем ежедневный снимок
-            saveDailySnapshot();
+            // Обновляем реферальную ссылку
+            updateReferralModal();
         }
         
         function getUserData() {
@@ -2021,7 +1916,6 @@
             if (!data.investments) data.investments = [];
             if (!data.user) data.user = { balance: 0 };
             if (!data.categories) data.categories = [];
-            if (!data.daily_snapshots) data.daily_snapshots = [];
             if (!data.user.referral_code) data.user.referral_code = generateReferralCode();
             if (!data.user.referral_count) data.user.referral_count = 0;
             if (!data.user.referral_bonus) data.user.referral_bonus = 0;
@@ -2045,91 +1939,28 @@
             document.getElementById('referralBonusModal').textContent = formatCurrency(data.user.referral_bonus) + ' ₽';
         }
         
-        // ====================== ЕЖЕДНЕВНЫЕ СНИМКИ БАЛАНСА ======================
+        // ====================== УВЕДОМЛЕНИЯ ======================
         
-        function saveDailySnapshot() {
-            const data = getUserData();
-            const today = new Date().toISOString().split('T')[0];
-            
-            // Проверяем, есть ли уже снимок на сегодня
-            const existingSnapshot = data.daily_snapshots.find(s => s.date === today);
-            
-            if (!existingSnapshot) {
-                const summary = getFinancialSummary('month');
-                
-                const snapshot = {
-                    date: today,
-                    balance: data.user.balance,
-                    total_income: summary.summary.total_income,
-                    total_expenses: summary.summary.total_expenses,
-                    savings_rate: summary.summary.savings_rate
-                };
-                
-                data.daily_snapshots.unshift(snapshot);
-                
-                // Храним только последние 90 дней
-                data.daily_snapshots = data.daily_snapshots.slice(0, 90);
-                
-                saveUserData(data);
-            }
-        }
-        
-        function getBalanceHistory(days = 30) {
-            const data = getUserData();
-            const snapshots = data.daily_snapshots.slice(0, days);
-            
-            // Если снимков мало, создаем на основе транзакций
-            if (snapshots.length < 7) {
-                return generateBalanceHistoryFromTransactions(days);
+        function showSuccessNotification(message) {
+            // Удаляем предыдущее уведомление если есть
+            const existingNotification = document.querySelector('.success-message');
+            if (existingNotification) {
+                existingNotification.remove();
             }
             
-            return snapshots;
-        }
-        
-        function generateBalanceHistoryFromTransactions(days) {
-            const data = getUserData();
-            const transactions = data.transactions;
-            const history = [];
+            // Создаем новое уведомление
+            const notification = document.createElement('div');
+            notification.className = 'success-message';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle success-check"></i> ${message}
+            `;
             
-            // Сортируем транзакции по дате
-            transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+            document.body.appendChild(notification);
             
-            // Создаем массив за последние N дней
-            const today = new Date();
-            let currentBalance = 0;
-            
-            for (let i = days; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(today.getDate() - i);
-                const dateString = date.toISOString().split('T')[0];
-                
-                // Находим транзакции за этот день
-                const dayTransactions = transactions.filter(t => {
-                    const tDate = new Date(t.date).toISOString().split('T')[0];
-                    return tDate === dateString;
-                });
-                
-                // Добавляем транзакции дня к балансу
-                dayTransactions.forEach(t => {
-                    if (t.type === 'income') {
-                        currentBalance += t.amount;
-                    } else {
-                        currentBalance -= t.amount;
-                    }
-                });
-                
-                // Добавляем снимок
-                history.push({
-                    date: dateString,
-                    balance: currentBalance,
-                    total_income: dayTransactions.filter(t => t.type === 'income')
-                        .reduce((sum, t) => sum + t.amount, 0),
-                    total_expenses: dayTransactions.filter(t => t.type === 'expense')
-                        .reduce((sum, t) => sum + t.amount, 0)
-                });
-            }
-            
-            return history;
+            // Автоматически удаляем через 2 секунды
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
         }
         
         // ====================== ОСНОВНЫЕ ФУНКЦИИ ======================
@@ -2148,9 +1979,6 @@
             }
             
             saveUserData(data);
-            
-            // Сохраняем снимок
-            saveDailySnapshot();
             
             // Если это доход и есть цели, предлагаем распределить
             if (transaction.type === 'income') {
@@ -2270,7 +2098,7 @@
             
             // Проверяем, достаточно ли средств на балансе
             if (data.user.balance < amount) {
-                showNotification('Недостаточно средств на балансе', 'error');
+                showError('Недостаточно средств на балансе');
                 return false;
             }
             
@@ -2481,66 +2309,29 @@
             return Math.min(Math.max(score, 0), 100);
         }
         
-        function generateAdvice(summary, expenseStructure) {
-            const data = getUserData();
+        function generateAdvice(summary) {
             const advice = [];
             
-            // 1. Анализ больших категорий расходов
-            if (expenseStructure && expenseStructure.length > 0) {
-                expenseStructure.forEach(item => {
-                    if (item.percentage > 30) {
-                        advice.push({ 
-                            advice_text: `💸 Больше всего вы тратите на "${item.category}" (${item.percentage.toFixed(1)}%). Попробуйте сократить траты в этой категории.`, 
-                            priority: 1 
-                        });
-                    } else if (item.percentage > 20) {
-                        advice.push({ 
-                            advice_text: `📊 Категория "${item.category}" занимает ${item.percentage.toFixed(1)}% расходов. Следите за тратами в этой области.`, 
-                            priority: 2 
-                        });
-                    }
-                });
-            }
-            
-            // 2. Совет по свободным средствам без инвестиций
-            const monthlyExpenses = summary.summary.total_expenses;
-            if (data.user.balance > monthlyExpenses * 3 && data.investments.length === 0) {
-                advice.push({ 
-                    advice_text: '💰 У вас есть свободные средства. Рассмотрите возможность инвестирования, чтобы защитить сбережения от инфляции.', 
-                    priority: 2 
-                });
-            }
-            
-            // 3. Совет по низкой норме сбережений
             if (summary.summary.savings_rate < 10) {
-                advice.push({ 
-                    advice_text: '💡 Попробуйте откладывать минимум 10% от доходов. Начните с автоматического перевода при получении дохода.', 
-                    priority: 2 
-                });
+                advice.push({ advice_text: '💡 Попробуйте откладывать минимум 10% от доходов', priority: 2 });
             }
             
-            // 4. Если расходы превышают 80% доходов
             if (summary.summary.total_expenses > summary.summary.total_income * 0.8) {
-                advice.push({ 
-                    advice_text: '⚠️ Расходы превышают 80% доходов. Пересмотрите основные статьи трат или подумайте об увеличении доходов.', 
-                    priority: 1 
-                });
+                advice.push({ advice_text: '⚠️ Расходы превышают 80% доходов. Пересмотрите траты', priority: 1 });
             }
             
-            // 5. Если нет целей
+            const data = getUserData();
             if (data.goals.length === 0) {
-                advice.push({ 
-                    advice_text: '🎯 Создайте финансовую цель для мотивации и систематического накопления.', 
-                    priority: 3 
-                });
+                advice.push({ advice_text: '🎯 Создайте финансовую цель для мотивации', priority: 3 });
             }
             
-            // 6. Если есть свободные средства и нет инвестиций
-            if (data.user.balance > 50000 && data.investments.length === 0) {
-                advice.push({ 
-                    advice_text: '📈 Часть свободных средств можно инвестировать для защиты от инфляции и получения дохода.', 
-                    priority: 2 
-                });
+            if (data.investments.length === 0 && summary.summary.savings_rate > 10) {
+                advice.push({ advice_text: '📈 Рассмотрите возможность инвестирования', priority: 2 });
+            }
+            
+            if (advice.length < 3) {
+                advice.push({ advice_text: '💰 Ведите учёт всех доходов и расходов', priority: 3 });
+                advice.push({ advice_text: '📊 Регулярно анализируйте структуру расходов', priority: 2 });
             }
             
             return advice.slice(0, 5);
@@ -2610,9 +2401,8 @@
             
             // Обновляем график, транзакции и советы
             updateExpenseChart(summary.expense_structure);
-            updateBalanceChart();
             updateRecentTransactions(summary.recent_transactions);
-            updateAdvice(generateAdvice(summary, summary.expense_structure));
+            updateAdvice(generateAdvice(summary));
             
             // Обновляем время обновления
             document.getElementById('lastUpdate').textContent = 
@@ -2719,6 +2509,963 @@
             }
         }
         
+        // ====================== ФУНКЦИИ МОДАЛЬНЫХ ОКОН ======================
+        
+        function showTransactionModal(type) {
+            currentTransactionType = type;
+            const modal = document.getElementById('transactionModal');
+            const title = document.getElementById('modalTitle');
+            
+            title.textContent = type === 'income' ? 'Добавить доход' : 'Добавить расход';
+            loadCategoryOptions(type);
+            
+            document.getElementById('amountInput').value = '';
+            document.getElementById('descriptionInput').value = '';
+            document.getElementById('tagsInput').value = '';
+            document.getElementById('customCategoryInput').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('amountInput').focus(), 300);
+        }
+        
+        function editTransaction(transactionId) {
+            const data = getUserData();
+            const transaction = data.transactions.find(t => t.id === transactionId);
+            
+            if (!transaction) return;
+            
+            const modal = document.getElementById('editTransactionModal');
+            
+            document.getElementById('editTransactionId').value = transactionId;
+            document.getElementById('editAmountInput').value = formatCurrency(transaction.amount);
+            document.getElementById('editDescriptionInput').value = transaction.description || '';
+            document.getElementById('editTagsInput').value = transaction.tags || '';
+            document.getElementById('editTypeSelect').value = transaction.type;
+            
+            // Загружаем категории для редактирования
+            const select = document.getElementById('editCategorySelect');
+            select.innerHTML = '<option value="">Выберите категорию</option>';
+            
+            const categories = data.categories.filter(cat => cat.type === transaction.type);
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = `${cat.icon} ${cat.name}`;
+                if (cat.name === transaction.category) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            modal.style.display = 'block';
+        }
+        
+        function saveEditedTransaction() {
+            const transactionId = parseInt(document.getElementById('editTransactionId').value);
+            const amount = parseCurrency(document.getElementById('editAmountInput').value);
+            const category = document.getElementById('editCategorySelect').value;
+            const type = document.getElementById('editTypeSelect').value;
+            const description = document.getElementById('editDescriptionInput').value;
+            const tags = document.getElementById('editTagsInput').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Введите корректную сумму');
+                return;
+            }
+            
+            if (!category) {
+                showError('Выберите категорию');
+                return;
+            }
+            
+            const updatedTransaction = {
+                amount: amount,
+                category: category,
+                type: type,
+                description: description,
+                tags: tags
+            };
+            
+            updateTransaction(transactionId, updatedTransaction);
+            
+            closeEditModal();
+            updateDashboard();
+            loadTransactions();
+            showSuccessNotification('Транзакция обновлена!');
+        }
+        
+        function deleteTransaction() {
+            const transactionId = parseInt(document.getElementById('editTransactionId').value);
+            
+            if (confirm('Удалить эту транзакцию?')) {
+                deleteTransactionById(transactionId);
+                closeEditModal();
+                updateDashboard();
+                loadTransactions();
+                showSuccessNotification('Транзакция удалена!');
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editTransactionModal').style.display = 'none';
+        }
+        
+        // ====================== ЦЕЛИ ======================
+        
+        function showGoalModal() {
+            const modal = document.getElementById('goalModal');
+            const dateInput = document.getElementById('goalDeadline');
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            dateInput.min = tomorrow.toISOString().split('T')[0];
+            
+            const inThreeMonths = new Date();
+            inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
+            dateInput.value = inThreeMonths.toISOString().split('T')[0];
+            
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalAmount').value = '';
+            document.getElementById('goalCategory').value = 'накопления';
+            document.getElementById('goalPriority').value = '1';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('goalTitle').focus(), 300);
+        }
+        
+        function editGoal(goalId) {
+            const data = getUserData();
+            const goal = data.goals.find(g => g.id === goalId);
+            
+            if (!goal) return;
+            
+            const modal = document.getElementById('editGoalModal');
+            
+            document.getElementById('editGoalId').value = goalId;
+            document.getElementById('editGoalTitle').value = goal.title;
+            document.getElementById('editGoalCurrentAmount').value = formatCurrency(goal.current_amount);
+            document.getElementById('editGoalTargetAmount').value = formatCurrency(goal.target_amount);
+            document.getElementById('editGoalDeadline').value = goal.deadline;
+            document.getElementById('editGoalCategory').value = goal.category;
+            
+            modal.style.display = 'block';
+        }
+        
+        function saveEditedGoal() {
+            const goalId = parseInt(document.getElementById('editGoalId').value);
+            const title = document.getElementById('editGoalTitle').value.trim();
+            const currentAmount = parseCurrency(document.getElementById('editGoalCurrentAmount').value);
+            const targetAmount = parseCurrency(document.getElementById('editGoalTargetAmount').value);
+            const deadline = document.getElementById('editGoalDeadline').value;
+            const category = document.getElementById('editGoalCategory').value;
+            
+            if (!title) {
+                showError('Введите название цели');
+                return;
+            }
+            
+            if (!targetAmount || targetAmount <= 0) {
+                showError('Введите корректную целевую сумму');
+                return;
+            }
+            
+            const updatedGoal = {
+                title: title,
+                current_amount: currentAmount,
+                target_amount: targetAmount,
+                deadline: deadline,
+                category: category
+            };
+            
+            updateGoal(goalId, updatedGoal);
+            
+            closeEditGoalModal();
+            updateDashboard();
+            loadGoals();
+            showSuccessNotification('Цель обновлена!');
+        }
+        
+        function deleteGoal() {
+            const goalId = parseInt(document.getElementById('editGoalId').value);
+            
+            if (confirm('Удалить эту цель?')) {
+                deleteGoalById(goalId);
+                closeEditGoalModal();
+                updateDashboard();
+                loadGoals();
+                showSuccessNotification('Цель удалена!');
+            }
+        }
+        
+        function closeEditGoalModal() {
+            document.getElementById('editGoalModal').style.display = 'none';
+        }
+        
+        function showAddToGoalModal(goalId) {
+            const data = getUserData();
+            const goal = data.goals.find(g => g.id === goalId);
+            
+            if (!goal) return;
+            
+            const modal = document.getElementById('addToGoalModal');
+            
+            document.getElementById('addToGoalId').value = goalId;
+            document.getElementById('addToGoalAmount').value = '';
+            document.getElementById('addToGoalComment').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('addToGoalAmount').focus(), 300);
+        }
+        
+        function processAddToGoal() {
+            const goalId = parseInt(document.getElementById('addToGoalId').value);
+            const amount = parseCurrency(document.getElementById('addToGoalAmount').value);
+            const comment = document.getElementById('addToGoalComment').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Введите корректную сумму');
+                return;
+            }
+            
+            if (addToGoal(goalId, amount, comment)) {
+                closeAddToGoalModal();
+                updateDashboard();
+                loadGoals();
+                showSuccessNotification(`Цель пополнена на ${formatCurrency(amount)} ₽!`);
+            }
+        }
+        
+        function closeAddToGoalModal() {
+            document.getElementById('addToGoalModal').style.display = 'none';
+        }
+        
+        function loadGoals() {
+            const data = getUserData();
+            const activeGoals = data.goals.filter(g => !g.completed);
+            const completedGoals = data.goals.filter(g => g.completed);
+            
+            updateGoalsList(activeGoals);
+            updateCompletedGoalsList(completedGoals);
+        }
+        
+        function updateGoalsList(goals) {
+            const container = document.getElementById('goalsList');
+            
+            if (!goals || goals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullseye"></i>
+                        <div>У вас пока нет финансовых целей</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            goals.forEach(goal => {
+                const deadline = new Date(goal.deadline);
+                const now = new Date();
+                const daysRemaining = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                const progressPercentage = (goal.current_amount / goal.target_amount) * 100;
+                const dailyRequired = daysRemaining > 0 ? 
+                    (goal.target_amount - goal.current_amount) / daysRemaining : 0;
+                
+                html += `
+                    <div class="goal-item">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px;">${goal.title}</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 2px;">
+                                    <i class="fas fa-tag"></i> ${goal.category}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 18px;">${formatCurrency(goal.current_amount)} ₽</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">из ${formatCurrency(goal.target_amount)} ₽</div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span>${progressPercentage.toFixed(1)}%</span>
+                                <span style="color: ${daysRemaining > 0 ? 'var(--text-color)' : '#f44336'}; opacity: 0.7; font-size: 14px;">
+                                    ${daysRemaining > 0 ? `⏰ ${daysRemaining} дн. осталось` : '⚠️ Срок истек'}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
+                                <i class="fas fa-calendar"></i> Срок: ${goal.deadline}
+                            </div>
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
+                                <i class="fas fa-coins"></i> Ежедневно: ${formatCurrency(dailyRequired)} ₽
+                            </div>
+                        </div>
+                        
+                        <div class="goal-actions">
+                            <button class="goal-btn" onclick="showAddToGoalModal(${goal.id})">
+                                <i class="fas fa-plus"></i> Пополнить
+                            </button>
+                            <button class="goal-btn" onclick="editGoal(${goal.id})">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // ====================== ИНВЕСТИЦИИ ======================
+        
+        function showInvestmentModal() {
+            const modal = document.getElementById('investmentModal');
+            
+            document.getElementById('investmentType').value = 'stock';
+            document.getElementById('investmentName').value = '';
+            document.getElementById('investmentPrice').value = '';
+            document.getElementById('investmentQuantity').value = '1';
+            document.getElementById('investmentAmount').value = '';
+            
+            modal.style.display = 'block';
+            setTimeout(() => document.getElementById('investmentName').focus(), 300);
+        }
+        
+        function editInvestment(investmentId) {
+            const data = getUserData();
+            const investment = data.investments.find(i => i.id === investmentId);
+            
+            if (!investment) return;
+            
+            const modal = document.getElementById('editInvestmentModal');
+            
+            document.getElementById('editInvestmentId').value = investmentId;
+            document.getElementById('editInvestmentType').value = investment.asset_type;
+            document.getElementById('editInvestmentName').value = investment.asset_name;
+            document.getElementById('editInvestmentPrice').value = formatCurrency(investment.price_per_unit);
+            document.getElementById('editInvestmentQuantity').value = investment.quantity;
+            document.getElementById('editInvestmentCurrentPrice').value = formatCurrency(investment.current_price);
+            document.getElementById('editInvestmentAmount').value = formatCurrency(investment.amount_invested);
+            
+            // Рассчитываем значения
+            calculateEditInvestmentTotal();
+            calculateEditInvestmentProfit();
+            
+            modal.style.display = 'block';
+        }
+        
+        function calculateEditInvestmentTotal() {
+            const price = parseCurrency(document.getElementById('editInvestmentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 0;
+            const total = price * quantity;
+            document.getElementById('editInvestmentAmount').value = formatCurrency(total);
+        }
+        
+        function calculateEditInvestmentProfit() {
+            const currentPrice = parseCurrency(document.getElementById('editInvestmentCurrentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 0;
+            const invested = parseCurrency(document.getElementById('editInvestmentAmount').value) || 0;
+            
+            const currentValue = currentPrice * quantity;
+            const profit = currentValue - invested;
+            
+            document.getElementById('editInvestmentCurrentValue').value = formatCurrency(currentValue);
+            document.getElementById('editInvestmentProfit').value = formatCurrency(profit);
+        }
+        
+        function saveEditedInvestment() {
+            const investmentId = parseInt(document.getElementById('editInvestmentId').value);
+            const assetType = document.getElementById('editInvestmentType').value;
+            const assetName = document.getElementById('editInvestmentName').value.trim();
+            const pricePerUnit = parseCurrency(document.getElementById('editInvestmentPrice').value);
+            const quantity = parseFloat(document.getElementById('editInvestmentQuantity').value) || 1;
+            const currentPrice = parseCurrency(document.getElementById('editInvestmentCurrentPrice').value);
+            
+            if (!assetName) {
+                showError('Введите название актива');
+                return;
+            }
+            
+            if (!pricePerUnit || pricePerUnit <= 0) {
+                showError('Введите корректную цену');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showError('Введите корректное количество');
+                return;
+            }
+            
+            const updatedInvestment = {
+                asset_type: assetType,
+                asset_name: assetName,
+                price_per_unit: pricePerUnit,
+                quantity: quantity,
+                amount_invested: pricePerUnit * quantity,
+                current_price: currentPrice || pricePerUnit
+            };
+            
+            updateInvestment(investmentId, updatedInvestment);
+            
+            closeEditInvestmentModal();
+            updateDashboard();
+            loadInvestments();
+            showSuccessNotification('Инвестиция обновлена!');
+        }
+        
+        function deleteInvestment() {
+            const investmentId = parseInt(document.getElementById('editInvestmentId').value);
+            
+            if (confirm('Удалить эту инвестицию? Средства вернутся на баланс.')) {
+                deleteInvestmentById(investmentId);
+                closeEditInvestmentModal();
+                updateDashboard();
+                loadInvestments();
+                showSuccessNotification('Инвестиция удалена! Средства возвращены на баланс.');
+            }
+        }
+        
+        function closeEditInvestmentModal() {
+            document.getElementById('editInvestmentModal').style.display = 'none';
+        }
+        
+        function calculateInvestmentTotal() {
+            const price = parseCurrency(document.getElementById('investmentPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('investmentQuantity').value) || 0;
+            const total = price * quantity;
+            document.getElementById('investmentAmount').value = formatCurrency(total);
+        }
+        
+        function loadInvestments() {
+            const data = getUserData();
+            updateInvestmentsList(data.investments);
+        }
+        
+        function updateInvestmentsList(investments) {
+            const container = document.getElementById('investmentsList');
+            
+            if (!investments || investments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <div>У вас пока нет инвестиций</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let totalInvested = 0;
+            let totalCurrent = 0;
+            
+            let html = '';
+            investments.forEach(inv => {
+                const profitLoss = inv.profit_loss || 0;
+                const roi = inv.roi_percentage || 0;
+                const isPositive = profitLoss >= 0;
+                
+                totalInvested += inv.amount_invested;
+                totalCurrent += inv.current_value || inv.amount_invested;
+                
+                html += `
+                    <div class="investment-card">
+                        <div class="investment-actions">
+                            <div class="action-icon" onclick="editInvestment(${inv.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px;">${inv.asset_name}</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 2px;">
+                                    <i class="fas fa-${getInvestmentIcon(inv.asset_type)}"></i> ${getInvestmentTypeName(inv.asset_type)}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 18px;">${formatCurrency(inv.current_value || inv.amount_invested)} ₽</div>
+                                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">${inv.quantity} шт.</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">
+                                Цена: ${formatCurrency(inv.price_per_unit || (inv.amount_invested / inv.quantity))} ₽
+                            </div>
+                            <div class="performance-badge ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '📈' : '📉'} ${profitLoss >= 0 ? '+' : ''}${formatCurrency(profitLoss)} ₽ (${roi.toFixed(1)}%)
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; margin-top: 5px;">
+                            <i class="fas fa-calendar"></i> Куплено: ${new Date(inv.purchase_date).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const totalProfit = totalCurrent - totalInvested;
+            const totalRoi = totalInvested > 0 ? (totalProfit / totalInvested * 100) : 0;
+            
+            html += `
+                <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; margin-bottom: 10px; text-align: center; color: var(--text-color);">Итоговая статистика</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: center;">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Всего инвестировано</div>
+                            <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(totalInvested)} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Текущая стоимость</div>
+                            <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(totalCurrent)} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Прибыль/убыток</div>
+                            <div style="font-weight: 600; font-size: 16px; color: ${totalProfit >= 0 ? '#4CAF50' : '#f44336'}">
+                                ${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit)} ₽
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Доходность (ROI)</div>
+                            <div style="font-weight: 600; font-size: 16px; color: ${totalRoi >= 0 ? '#4CAF50' : '#f44336'}">
+                                ${totalRoi >= 0 ? '+' : ''}${totalRoi.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // ====================== РЕФЕРАЛЬНАЯ СИСТЕМА ======================
+        
+        function showReferralModal() {
+            updateReferralModal();
+            document.getElementById('referralModal').style.display = 'block';
+        }
+        
+        function closeReferralModal() {
+            document.getElementById('referralModal').style.display = 'none';
+        }
+        
+        function copyReferralLink() {
+            const input = document.getElementById('referralLinkInput');
+            input.select();
+            document.execCommand('copy');
+            showSuccessNotification('Ссылка скопирована в буфер обмена!');
+        }
+        
+        // ====================== ОТЧЕТЫ ======================
+        
+        function generateReport(type) {
+            const data = getUserData();
+            const summary = getFinancialSummary(type === 'monthly' ? 'month' : 'year');
+            
+            let reportText = `Финансовый отчет (${type === 'monthly' ? 'месячный' : 'годовой'})\n`;
+            reportText += `Дата: ${new Date().toLocaleDateString('ru-RU')}\n`;
+            reportText += `Пользователь: ${data.user.full_name}\n`;
+            reportText += `Период: ${type === 'monthly' ? 'за месяц' : 'за год'}\n\n`;
+            
+            reportText += `📊 ОБЩАЯ СТАТИСТИКА:\n`;
+            reportText += `Баланс: ${formatCurrency(data.user.balance)} ₽\n`;
+            reportText += `Доходы: ${formatCurrency(summary.summary.total_income)} ₽\n`;
+            reportText += `Расходы: ${formatCurrency(summary.summary.total_expenses)} ₽\n`;
+            reportText += `Чистый доход: ${formatCurrency(summary.summary.net_income)} ₽\n`;
+            reportText += `Норма сбережений: ${summary.summary.savings_rate.toFixed(1)}%\n\n`;
+            
+            reportText += `🎯 ЦЕЛИ:\n`;
+            const activeGoals = data.goals.filter(g => !g.completed);
+            const completedGoals = data.goals.filter(g => g.completed);
+            reportText += `Активных: ${activeGoals.length}\n`;
+            reportText += `Завершенных: ${completedGoals.length}\n\n`;
+            
+            reportText += `📈 ИНВЕСТИЦИИ:\n`;
+            reportText += `Всего инвестиций: ${data.investments.length}\n`;
+            reportText += `Общая стоимость: ${formatCurrency(summary.summary.total_investments)} ₽\n\n`;
+            
+            reportText += `💼 ОПЕРАЦИИ:\n`;
+            reportText += `Всего транзакций: ${data.transactions.length}\n`;
+            reportText += `Доходов: ${data.transactions.filter(t => t.type === 'income').length}\n`;
+            reportText += `Расходов: ${data.transactions.filter(t => t.type === 'expense').length}\n`;
+            
+            showSuccessNotification('Отчет сформирован!');
+            // В реальном приложении можно отправить в Telegram или сохранить как файл
+            console.log(reportText);
+        }
+        
+        function exportToCSV() {
+            const data = getUserData();
+            const summary = getFinancialSummary('all');
+            
+            let csv = 'Категория,Сумма,Тип,Дата,Описание\n';
+            
+            // Транзакции
+            data.transactions.forEach(t => {
+                const date = new Date(t.date).toLocaleDateString('ru-RU');
+                csv += `"${t.category}",${t.amount},"${t.type}","${date}","${t.description || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `transactions_${userId}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showSuccessNotification('Данные экспортированы в CSV!');
+        }
+        
+        function exportToExcel() {
+            // Простой Excel экспорт через HTML таблицу
+            const data = getUserData();
+            
+            let html = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Финансовый отчет</h1>
+                    <h3>Дата: ${new Date().toLocaleDateString('ru-RU')}</h3>
+                    <h3>Пользователь: ${data.user.full_name}</h3>
+                    
+                    <h2>Транзакции</h2>
+                    <table>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Тип</th>
+                            <th>Категория</th>
+                            <th>Сумма (₽)</th>
+                            <th>Описание</th>
+                        </tr>
+            `;
+            
+            data.transactions.forEach(t => {
+                const date = new Date(t.date).toLocaleDateString('ru-RU');
+                html += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${t.type === 'income' ? 'Доход' : 'Расход'}</td>
+                        <td>${t.category}</td>
+                        <td>${formatCurrency(t.amount)}</td>
+                        <td>${t.description || ''}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </table>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `finance_report_${userId}_${new Date().toISOString().split('T')[0]}.xls`;
+            link.click();
+            
+            showSuccessNotification('Отчет экспортирован в Excel!');
+        }
+        
+        function clearAllData() {
+            if (confirm('Вы уверены? Все данные будут удалены без возможности восстановления.')) {
+                const userDataKey = `finance_user_${userId}`;
+                localStorage.removeItem(userDataKey);
+                initUserData();
+                updateDashboard();
+                loadTransactions();
+                loadGoals();
+                loadInvestments();
+                loadProfile();
+                showSuccessNotification('Все данные очищены!');
+            }
+        }
+        
+        // ====================== ОСТАЛЬНЫЕ ФУНКЦИИ ======================
+        
+        function loadCategoryOptions(type) {
+            const select = document.getElementById('categorySelect');
+            const customGroup = document.getElementById('customCategoryGroup');
+            
+            select.innerHTML = '<option value="">Выберите категорию</option>';
+            selectedCategory = '';
+            customGroup.style.display = 'none';
+            
+            const data = getUserData();
+            const categories = data.categories.filter(cat => cat.type === type);
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = `${cat.icon} ${cat.name}`;
+                select.appendChild(option);
+            });
+            
+            if (!categories.find(cat => cat.name === 'другое')) {
+                const otherOption = document.createElement('option');
+                otherOption.value = 'другое';
+                otherOption.textContent = '📌 Другое (ввести свою)';
+                select.appendChild(otherOption);
+            }
+        }
+        
+        function handleCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            const customGroup = document.getElementById('customCategoryGroup');
+            
+            if (select.value === 'другое') {
+                customGroup.style.display = 'block';
+                selectedCategory = '';
+                setTimeout(() => document.getElementById('customCategoryInput').focus(), 100);
+            } else {
+                customGroup.style.display = 'none';
+                selectedCategory = select.value;
+            }
+        }
+        
+        function submitTransaction() {
+            const amount = parseCurrency(document.getElementById('amountInput').value);
+            const description = document.getElementById('descriptionInput').value;
+            const tags = document.getElementById('tagsInput').value;
+            const categorySelect = document.getElementById('categorySelect');
+            const customCategory = document.getElementById('customCategoryInput').value;
+            
+            if (!amount || amount <= 0) {
+                showError('Пожалуйста, введите корректную сумму');
+                return;
+            }
+            
+            let category = categorySelect.value;
+            if (category === 'другое' && customCategory) {
+                category = customCategory.trim();
+            }
+            
+            if (!category) {
+                showError('Пожалуйста, выберите или введите категорию');
+                return;
+            }
+            
+            const transaction = addTransaction({
+                user_id: userId,
+                amount: amount,
+                category: category,
+                type: currentTransactionType,
+                description: description,
+                tags: tags
+            });
+            
+            updateDashboard();
+            closeModal();
+            showSuccessNotification('Транзакция успешно добавлена!');
+        }
+        
+        function submitGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const amount = parseCurrency(document.getElementById('goalAmount').value);
+            const deadline = document.getElementById('goalDeadline').value;
+            const category = document.getElementById('goalCategory').value;
+            const priority = document.getElementById('goalPriority').value;
+            
+            if (!title) {
+                showError('Пожалуйста, введите название цели');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                showError('Пожалуйста, введите корректную сумму');
+                return;
+            }
+            
+            const goal = addGoal({
+                user_id: userId,
+                title: title,
+                target_amount: amount,
+                deadline: deadline,
+                category: category,
+                priority: parseInt(priority)
+            });
+            
+            loadGoals();
+            closeModal();
+            showSuccessNotification('Цель успешно создана!');
+        }
+        
+        function submitInvestment() {
+            const assetType = document.getElementById('investmentType').value;
+            const assetName = document.getElementById('investmentName').value.trim();
+            const price = parseCurrency(document.getElementById('investmentPrice').value);
+            const quantity = parseFloat(document.getElementById('investmentQuantity').value) || 1;
+            const total = parseCurrency(document.getElementById('investmentAmount').value);
+            
+            if (!assetName) {
+                showError('Пожалуйста, введите название актива');
+                return;
+            }
+            
+            if (!price || price <= 0) {
+                showError('Пожалуйста, введите корректную цену');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showError('Пожалуйста, введите корректное количество');
+                return;
+            }
+            
+            const investment = addInvestment({
+                user_id: userId,
+                asset_type: assetType,
+                asset_name: assetName,
+                price_per_unit: price,
+                quantity: quantity,
+                amount_invested: total
+            });
+            
+            loadInvestments();
+            updateDashboard();
+            closeModal();
+            showSuccessNotification('Инвестиция успешно добавлена!');
+        }
+        
+        function closeModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+            document.getElementById('goalModal').style.display = 'none';
+            document.getElementById('investmentModal').style.display = 'none';
+            selectedCategory = '';
+        }
+        
+        function loadTransactions() {
+            const data = getUserData();
+            updateTransactionsListFull(data.transactions);
+        }
+        
+        function updateTransactionsListFull(transactions) {
+            const container = document.getElementById('transactionsList');
+            
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>Нет операций</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            transactions.forEach(transaction => {
+                const isIncome = transaction.type === 'income';
+                const date = new Date(transaction.date);
+                const formattedDate = date.toLocaleDateString('ru-RU', { 
+                    day: '2-digit', 
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const tags = transaction.tags ? 
+                    transaction.tags.split(',').map(tag => `<span style="background: var(--border-color); padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-right: 5px; color: var(--text-color);">${tag.trim()}</span>`).join('') : '';
+                
+                html += `
+                    <div class="transaction-item transaction-${transaction.type}">
+                        <div class="transaction-icon">
+                            <i class="fas fa-${isIncome ? 'arrow-up' : 'arrow-down'}"></i>
+                        </div>
+                        <div class="transaction-info">
+                            <div class="transaction-category">${transaction.category}</div>
+                            <div class="transaction-description">${transaction.description || ''}</div>
+                            <div style="margin-top: 5px;">${tags}</div>
+                            <div class="transaction-date">${formattedDate}</div>
+                        </div>
+                        <div class="transaction-amount">
+                            ${isIncome ? '+' : '-'}${formatCurrency(transaction.amount)} ₽
+                        </div>
+                        <div class="transaction-actions">
+                            <div class="action-icon" onclick="editTransaction(${transaction.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterTransactions() {
+            const typeFilter = document.getElementById('transactionTypeFilter').value;
+            const periodFilter = document.getElementById('transactionPeriodFilter').value;
+            
+            const data = getUserData();
+            let filtered = data.transactions;
+            
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(t => t.type === typeFilter);
+            }
+            
+            if (periodFilter !== 'all') {
+                const now = new Date();
+                let startDate = new Date();
+                
+                switch(periodFilter) {
+                    case 'week': startDate.setDate(now.getDate() - 7); break;
+                    case 'month': startDate.setMonth(now.getMonth() - 1); break;
+                    case 'year': startDate.setFullYear(now.getFullYear() - 1); break;
+                }
+                
+                filtered = filtered.filter(t => new Date(t.date) >= startDate);
+            }
+            
+            updateTransactionsListFull(filtered);
+        }
+        
+        function loadProfile() {
+            const data = getUserData();
+            updateProfileInfo(data.user);
+        }
+        
+        function updateProfileInfo(user) {
+            const container = document.getElementById('profileInfo');
+            
+            const html = `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2481cc); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
+                        ${user.full_name ? user.full_name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 18px; color: var(--text-color);">${user.full_name || 'Не указано'}</div>
+                        <div style="font-size: 14px; color: var(--text-color); opacity: 0.7;">${initData.user?.username ? '@' + initData.user.username : 'Тестовый пользователь'}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Основной доход</div>
+                        <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${user.main_income ? formatCurrency(user.main_income) + ' ₽' : 'Не указан'}</div>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">Текущий баланс</div>
+                        <div style="font-weight: 600; font-size: 16px; color: var(--text-color);">${formatCurrency(user.balance)} ₽</div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 14px; color: var(--text-color); opacity: 0.7; text-align: center; margin-top: 15px;">
+                    <i class="fas fa-calendar"></i> Зарегистрирован ${new Date(user.registration_date).toLocaleDateString('ru-RU')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
         // ====================== ГРАФИКИ ======================
         
         function updateExpenseChart(expenseStructure) {
@@ -2727,9 +3474,6 @@
             if (charts.expenseChart) {
                 charts.expenseChart.destroy();
             }
-            
-            // Сохраняем структуру расходов для настроек
-            window.currentExpenseStructure = expenseStructure;
             
             if (!expenseStructure || expenseStructure.length === 0) {
                 charts.expenseChart = new Chart(ctx, {
@@ -2757,27 +3501,15 @@
                 return;
             }
             
-            // Фильтруем категории по настройкам
-            let filteredStructure = expenseStructure;
-            if (Object.keys(visibleCategories).length > 0) {
-                filteredStructure = expenseStructure.filter(item => 
-                    visibleCategories[item.category] !== false
-                );
-            }
+            const labels = expenseStructure.map(item => item.category);
+            const data = expenseStructure.map(item => item.amount);
+            const percentages = expenseStructure.map(item => item.percentage);
             
-            if (filteredStructure.length === 0) {
-                filteredStructure = expenseStructure;
-            }
-            
-            const labels = filteredStructure.map(item => item.category);
-            const data = filteredStructure.map(item => item.amount);
-            const percentages = filteredStructure.map(item => item.percentage);
-            
-            // Яркие цвета для лучшей видимости
+            // Светлые цвета для диаграммы
             const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                '#9966FF', '#FF9F40', '#77DD77', '#84B6F4',
-                '#FDFD96', '#FF6961'
+                '#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB',
+                '#B5EAD7', '#C7CEEA', '#D8E2DC', '#FFE5D9',
+                '#FFD6E0', '#C9E4DE'
             ];
             
             charts.expenseChart = new Chart(ctx, {
@@ -2787,7 +3519,7 @@
                     datasets: [{
                         data: data,
                         backgroundColor: colors.slice(0, labels.length),
-                        borderWidth: 3,
+                        borderWidth: 2,
                         borderColor: 'var(--bg-color)'
                     }]
                 },
@@ -2801,10 +3533,9 @@
                                 color: function() {
                                     return getTextColor();
                                 },
-                                font: { size: 11, weight: '600' },
-                                padding: 15,
-                                usePointStyle: true,
-                                boxWidth: 8
+                                font: { size: 12 },
+                                padding: 20,
+                                usePointStyle: true
                             }
                         },
                         tooltip: {
@@ -2818,327 +3549,99 @@
                             }
                         },
                         datalabels: {
-                            color: '#ffffff',
-                            font: { size: 10, weight: 'bold' },
+                            color: function(context) {
+                                // Темный текст на светлом фоне
+                                return '#000000';
+                            },
+                            font: { size: 11, weight: 'bold' },
                             formatter: (value, ctx) => {
-                                const percentage = percentages[ctx.dataIndex];
-                                return percentage > 5 ? `${percentage.toFixed(0)}%` : '';
+                                return percentages[ctx.dataIndex]?.toFixed(1) + '%';
                             }
                         }
                     },
-                    cutout: '65%'
+                    cutout: '60%'
                 },
                 plugins: [ChartDataLabels]
             });
         }
         
-        function updateBalanceChart() {
-            const ctx = document.getElementById('balanceChart').getContext('2d');
-            
-            if (charts.balanceChart) {
-                charts.balanceChart.destroy();
-            }
-            
-            const balanceHistory = getBalanceHistory(30);
-            
-            if (!balanceHistory || balanceHistory.length < 2) {
-                // Показываем заглушку если недостаточно данных
-                charts.balanceChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Недостаточно данных'],
-                        datasets: [{
-                            data: [0],
-                            borderColor: '#e0e0e0',
-                            backgroundColor: 'rgba(224, 224, 224, 0.1)',
-                            borderWidth: 2,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: false }
-                        }
-                    }
-                });
-                return;
-            }
-            
-            const labels = balanceHistory.map(item => {
-                const date = new Date(item.date);
-                return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-            }).reverse();
-            
-            const balances = balanceHistory.map(item => item.balance).reverse();
-            
-            charts.balanceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Баланс',
-                        data: balances,
-                        borderColor: '#40a7e3',
-                        backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#40a7e3',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Баланс: ${formatCurrency(context.raw)} ₽`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value) + ' ₽';
-                                },
-                                color: getTextColor()
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: getTextColor(),
-                                maxRotation: 0
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ======================
         
-        // ====================== НАСТРАИВАЕМАЯ ДИАГРАММА ======================
-        
-        function toggleChartSettings() {
-            const modal = document.getElementById('chartSettingsModal');
-            const content = document.getElementById('chartSettingsContent');
-            
-            if (!window.currentExpenseStructure) {
-                content.innerHTML = '<p style="text-align: center; padding: 20px;">Нет данных о расходах</p>';
-                modal.style.display = 'block';
-                return;
-            }
-            
-            let html = '<p style="margin-bottom: 15px; color: var(--text-color);">Выберите категории для отображения:</p>';
-            
-            window.currentExpenseStructure.forEach(item => {
-                const isVisible = visibleCategories[item.category] !== false;
-                html += `
-                <div style="margin-bottom: 8px; padding: 10px; background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border-color);">
-                    <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="checkbox" ${isVisible ? 'checked' : ''} 
-                               onchange="toggleCategoryVisibility('${item.category}', this.checked)"
-                               style="margin-right: 10px; width: 18px; height: 18px;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: var(--text-color);">${item.category}</div>
-                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">${item.percentage.toFixed(1)}% (${formatCurrency(item.amount)} ₽)</div>
-                        </div>
-                    </label>
-                </div>
-                `;
-            });
-            
-            html += `
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn" onclick="selectAllCategories()" style="flex: 1; padding: 10px;">
-                    <i class="fas fa-check-square"></i> Выбрать все
-                </button>
-                <button class="btn" onclick="deselectAllCategories()" style="flex: 1; padding: 10px;">
-                    <i class="fas fa-square"></i> Снять все
-                </button>
-            </div>
-            `;
-            
-            content.innerHTML = html;
-            modal.style.display = 'block';
-        }
-        
-        function toggleCategoryVisibility(category, isVisible) {
-            visibleCategories[category] = isVisible;
-        }
-        
-        function selectAllCategories() {
-            if (window.currentExpenseStructure) {
-                window.currentExpenseStructure.forEach(item => {
-                    visibleCategories[item.category] = true;
-                });
-            }
-            // Обновляем чекбоксы
-            const checkboxes = document.querySelectorAll('#chartSettingsContent input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = true);
-        }
-        
-        function deselectAllCategories() {
-            if (window.currentExpenseStructure) {
-                window.currentExpenseStructure.forEach(item => {
-                    visibleCategories[item.category] = false;
-                });
-            }
-            // Обновляем чекбоксы
-            const checkboxes = document.querySelectorAll('#chartSettingsContent input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
-        }
-        
-        function applyChartSettings() {
-            closeChartSettings();
-            if (window.currentExpenseStructure) {
-                updateExpenseChart(window.currentExpenseStructure);
-            }
-            showNotification('Настройки применены!', 'success');
-        }
-        
-        function closeChartSettings() {
-            document.getElementById('chartSettingsModal').style.display = 'none';
-        }
-        
-        // ====================== ДЕТАЛИЗАЦИЯ РАСХОДОВ ======================
-        
-        function showExpenseDetail() {
-            const summary = getFinancialSummary('month');
-            const expenseStructure = summary.expense_structure;
-            const modal = document.getElementById('expenseDetailModal');
-            const content = document.getElementById('expenseDetailContent');
-            
-            if (!expenseStructure || expenseStructure.length === 0) {
-                content.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-color);">Нет данных о расходах за месяц</p>';
-                modal.style.display = 'block';
-                return;
-            }
-            
-            const totalExpenses = summary.summary.total_expenses;
-            
-            let html = `
-            <div style="margin-bottom: 20px; padding: 15px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
-                <div style="font-size: 14px; color: var(--text-color); opacity: 0.8;">Общие расходы за месяц</div>
-                <div style="font-weight: 600; font-size: 24px; color: var(--expense-color);">${formatCurrency(totalExpenses)} ₽</div>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th style="border-bottom: 2px solid var(--border-color); padding: 12px; text-align: left; color: var(--text-color);">Категория</th>
-                            <th style="border-bottom: 2px solid var(--border-color); padding: 12px; text-align: right; color: var(--text-color);">Сумма</th>
-                            <th style="border-bottom: 2px solid var(--border-color); padding: 12px; text-align: right; color: var(--text-color);">Доля</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            expenseStructure.forEach((item, index) => {
-                const icon = getCategoryIcon(item.category);
-                html += `
-                <tr style="${index % 2 === 0 ? 'background: rgba(0,0,0,0.02);' : ''}">
-                    <td style="border-bottom: 1px solid var(--border-color); padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${getCategoryColor(index)}; display: flex; align-items: center; justify-content: center; color: white;">
-                                <i class="fas fa-${icon}"></i>
-                            </div>
-                            <div style="font-weight: 500; color: var(--text-color);">${item.category}</div>
-                        </div>
-                    </td>
-                    <td style="border-bottom: 1px solid var(--border-color); padding: 12px; text-align: right; font-weight: 600; color: var(--text-color);">
-                        ${formatCurrency(item.amount)} ₽
-                    </td>
-                    <td style="border-bottom: 1px solid var(--border-color); padding: 12px; text-align: right;">
-                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                            <div style="font-weight: 600; color: var(--text-color);">${item.percentage.toFixed(1)}%</div>
-                            <div style="width: 60px; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;">
-                                <div style="width: ${item.percentage}%; height: 100%; background: ${getCategoryColor(index)}; border-radius: 3px;"></div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                `;
-            });
-            
-            html += `
-                    </tbody>
-                </table>
-            </div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 87, 34, 0.1)); border-radius: 12px; border-left: 4px solid #FF9800;">
-                <div style="font-weight: 600; color: var(--text-color); margin-bottom: 5px;">💡 Интересный факт</div>
-                <div style="font-size: 14px; color: var(--text-color); opacity: 0.9;">
-                    Больше всего вы тратите на <b>${expenseStructure[0]?.category || 'неизвестную категорию'}</b> — 
-                    ${expenseStructure[0]?.percentage.toFixed(1) || '0'}% от всех расходов.
-                </div>
-            </div>
-            `;
-            
-            content.innerHTML = html;
-            modal.style.display = 'block';
-        }
-        
-        function closeExpenseDetailModal() {
-            document.getElementById('expenseDetailModal').style.display = 'none';
-        }
-        
-        function getCategoryIcon(category) {
+        function getInvestmentIcon(type) {
             const icons = {
-                'еда': 'utensils',
-                'транспорт': 'car',
-                'жилье': 'home',
-                'развлечения': 'gamepad',
-                'образование': 'graduation-cap',
-                'здоровье': 'heartbeat',
-                'одежда': 'tshirt',
-                'техника': 'laptop',
-                'путешествия': 'plane',
-                'подарки': 'gift',
-                'инвестиции': 'chart-line',
-                'автомобиль': 'car',
-                'здоровье': 'heartbeat',
-                'красота': 'spa',
-                'спорт': 'dumbbell',
-                'дети': 'baby',
-                'питомцы': 'paw',
-                'коммуналка': 'bolt',
-                'связь': 'phone',
-                'интернет': 'wifi',
-                'страхование': 'shield-alt',
-                'кредиты': 'file-invoice-dollar'
+                'stock': 'chart-line',
+                'crypto': 'bitcoin',
+                'bond': 'hand-holding-usd',
+                'real_estate': 'home',
+                'other': 'coins'
             };
-            return icons[category.toLowerCase()] || 'tag';
+            return icons[type] || 'coins';
         }
         
-        function getCategoryColor(index) {
-            const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                '#9966FF', '#FF9F40', '#77DD77', '#84B6F4',
-                '#FDFD96', '#FF6961', '#C9CBCF', '#B19CD9'
-            ];
-            return colors[index % colors.length];
+        function getInvestmentTypeName(type) {
+            const names = {
+                'stock': 'Акции',
+                'crypto': 'Криптовалюта',
+                'bond': 'Облигации',
+                'real_estate': 'Недвижимость',
+                'other': 'Другое'
+            };
+            return names[type] || 'Инвестиция';
         }
         
-        // ====================== ОБНОВЛЕНИЕ СОВЕТОВ ======================
+        function getTextColor() {
+            const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d' || 
+                          document.documentElement.style.getPropertyValue('--bg-color') === '#000000' ||
+                          document.documentElement.style.getPropertyValue('--bg-color') === '#0f0f0f';
+            return isDark ? '#ffffff' : '#000000';
+        }
+        
+        function showLoader() {
+            document.getElementById('loader').classList.remove('hidden');
+        }
+        
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+        
+        function showError(message) {
+            if (tg.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+        
+        function showSuccess(message) {
+            if (tg.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+        
+        function showDetailedReport(type) {
+            const summary = getFinancialSummary('month');
+            let reportText = `Отчет по ${type === 'income' ? 'доходам' : 'расходам'}:\n\n`;
+            
+            if (type === 'income') {
+                reportText += `Всего доходов: ${formatCurrency(summary.summary.total_income)} ₽\n`;
+            } else {
+                reportText += `Всего расходов: ${formatCurrency(summary.summary.total_expenses)} ₽\n\n`;
+                summary.expense_structure.forEach(item => {
+                    reportText += `${item.category}: ${formatCurrency(item.amount)} ₽ (${item.percentage.toFixed(1)}%)\n`;
+                });
+            }
+            
+            showSuccess(reportText);
+        }
+        
+        function loadMoreAdvice() {
+            const summary = getFinancialSummary('month');
+            const advice = generateAdvice(summary);
+            updateAdvice(advice);
+            showSuccessNotification('Советы обновлены!');
+        }
         
         function updateAdvice(advice) {
             const container = document.getElementById('adviceContainer');
@@ -3156,105 +3659,17 @@
             let html = '';
             advice.forEach(item => {
                 const priorityClass = item.priority === 1 ? 'high' : item.priority === 2 ? 'medium' : '';
-                const icon = item.priority === 1 ? '⚠️' : item.priority === 2 ? '💡' : '📌';
-                
                 html += `
                     <div class="advice-item ${priorityClass}">
-                        <div style="display: flex; align-items: flex-start; gap: 10px;">
-                            <div style="font-size: 20px; flex-shrink: 0;">${icon}</div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 5px; color: var(--text-color);">${item.advice_text}</div>
-                                <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
-                                    ${item.priority === 1 ? 'Высокий приоритет' : item.priority === 2 ? 'Средний приоритет' : 'Низкий приоритет'}
-                                </div>
-                            </div>
+                        <div style="font-weight: 600; margin-bottom: 5px; color: var(--text-color);">${item.advice_text}</div>
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
+                            ${item.priority === 1 ? 'Высокий приоритет' : item.priority === 2 ? 'Средний приоритет' : 'Низкий приоритет'}
                         </div>
                     </div>
                 `;
             });
             
             container.innerHTML = html;
-        }
-        
-        // ====================== ОБРАБОТКА ФОРМ ======================
-        
-        function submitGoal() {
-            const title = document.getElementById('goalTitle').value.trim();
-            const amount = parseCurrency(document.getElementById('goalAmount').value);
-            const deadline = document.getElementById('goalDeadline').value;
-            const category = document.getElementById('goalCategory').value;
-            const priority = document.getElementById('goalPriority').value;
-            
-            if (!title) {
-                showNotification('Пожалуйста, введите название цели', 'error');
-                return;
-            }
-            
-            if (!amount || amount <= 0) {
-                showNotification('Пожалуйста, введите корректную сумму', 'error');
-                return;
-            }
-            
-            const goal = addGoal({
-                user_id: userId,
-                title: title,
-                target_amount: amount,
-                deadline: deadline,
-                category: category,
-                priority: parseInt(priority)
-            });
-            
-            // Закрываем модалку с анимацией
-            setTimeout(() => {
-                closeModal();
-                showNotification('Цель успешно создана! 🎯', 'success');
-                loadGoals();
-            }, 800);
-        }
-        
-        function submitTransaction() {
-            const amount = parseCurrency(document.getElementById('amountInput').value);
-            const description = document.getElementById('descriptionInput').value;
-            const tags = document.getElementById('tagsInput').value;
-            const categorySelect = document.getElementById('categorySelect');
-            const customCategory = document.getElementById('customCategoryInput').value;
-            
-            if (!amount || amount <= 0) {
-                showNotification('Пожалуйста, введите корректную сумму', 'error');
-                return;
-            }
-            
-            let category = categorySelect.value;
-            if (category === 'другое' && customCategory) {
-                category = customCategory.trim();
-            }
-            
-            if (!category) {
-                showNotification('Пожалуйста, выберите или введите категорию', 'error');
-                return;
-            }
-            
-            const transaction = addTransaction({
-                user_id: userId,
-                amount: amount,
-                category: category,
-                type: currentTransactionType,
-                description: description,
-                tags: tags
-            });
-            
-            closeModal();
-            updateDashboard();
-            showNotification('Транзакция успешно добавлена! ✅', 'success');
-        }
-        
-        // ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ======================
-        
-        function getTextColor() {
-            const isDark = document.documentElement.style.getPropertyValue('--bg-color') === '#18222d' || 
-                          document.documentElement.style.getPropertyValue('--bg-color') === '#000000' ||
-                          document.documentElement.style.getPropertyValue('--bg-color') === '#0f0f0f';
-            return isDark ? '#ffffff' : '#000000';
         }
         
         // ====================== ИНИЦИАЛИЗАЦИЯ ======================
@@ -3268,10 +3683,6 @@
                 tg.expand();
             });
             
-            // Сохраняем снимок каждые 24 часа
-            setInterval(saveDailySnapshot, 24 * 60 * 60 * 1000);
-            
-            // Обновляем дашборд каждые 30 секунд
             setInterval(updateDashboard, 30000);
         });
         
@@ -3283,6 +3694,7 @@
                 document.documentElement.style.setProperty('--border-color', tg.themeParams.hint_color || '#e0e0e0');
                 document.documentElement.style.setProperty('--button-color', tg.themeParams.button_color || '#40a7e3');
                 document.documentElement.style.setProperty('--button-text-color', tg.themeParams.button_text_color || '#ffffff');
+                document.documentElement.style.setProperty('--transaction-bg', tg.themeParams.secondary_bg_color || '#f8f9fa');
             }
         }
         
@@ -3290,8 +3702,7 @@
         window.onclick = function(event) {
             const modals = ['transactionModal', 'goalModal', 'investmentModal', 
                            'editTransactionModal', 'editGoalModal', 'addToGoalModal',
-                           'editInvestmentModal', 'goalAllocationModal', 'referralModal',
-                           'chartSettingsModal', 'expenseDetailModal'];
+                           'editInvestmentModal', 'goalAllocationModal', 'referralModal'];
             
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
@@ -3314,8 +3725,6 @@
                 closeAddToGoalModal();
                 closeEditInvestmentModal();
                 closeReferralModal();
-                closeChartSettings();
-                closeExpenseDetailModal();
                 const allocationModal = document.getElementById('goalAllocationModal');
                 if (allocationModal) allocationModal.remove();
             }
@@ -3323,3 +3732,4 @@
     </script>
 </body>
 </html>
+
